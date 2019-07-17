@@ -2,10 +2,10 @@
 
 Decoder::Decoder()
 {
-    mFormatCtx = NULL;
-    mVideoCodec = NULL;
-    mVideoCodecCtx = NULL;
-    mImgConvertCtx = NULL;
+    mFormatCtx = nullptr;
+    mVideoCodec = nullptr;
+    mVideoCodecCtx = nullptr;
+    mImgConvertCtx = nullptr;
     videoStreamIndex = -1;
     isOpen = false;
     ffmpegTimeBase = 0.0;
@@ -20,12 +20,12 @@ bool Decoder::openFile(const QString &videoInPut)
     //av_register_all();
 
 
-    if(avformat_open_input(&mFormatCtx, videoInPut.toUtf8().constData(), NULL, NULL) != 0)
+    if(avformat_open_input(&mFormatCtx, videoInPut.toUtf8().constData(), nullptr, nullptr) != 0)
     {
         closeFile();
         return false;
     }
-    if(avformat_find_stream_info(mFormatCtx, NULL) < 0)
+    if(avformat_find_stream_info(mFormatCtx, nullptr) < 0)
     {
         closeFile();
         return false;
@@ -71,7 +71,7 @@ bool Decoder::closeFile()
         {
 
             avformat_close_input(&mFormatCtx);
-            mFormatCtx = NULL;
+            mFormatCtx = nullptr;
 
         }
         return true;
@@ -89,7 +89,7 @@ int Decoder::getHeight()
 
 AVFrame *Decoder::GetNextFrame()
 {
-    AVFrame * res = NULL;
+    AVFrame * res = nullptr;
 
 
 
@@ -170,7 +170,7 @@ AVFrame *Decoder::GetNextFrame()
 
 AVFrame *Decoder::GetRGBAFrame(AVFrame *mFrameYuv)
 {
-    AVFrame * frame = NULL;
+    AVFrame * frame = nullptr;
 
         int width  = mVideoCodecCtx->width;
 
@@ -252,7 +252,7 @@ bool Decoder::openVideo()
 
                         {
 
-                            res     = !(avcodec_open2(mVideoCodecCtx, mVideoCodec, NULL) < 0);
+                            res     = !(avcodec_open2(mVideoCodecCtx, mVideoCodec, nullptr) < 0);
 
                             mWidth   = mVideoCodecCtx->coded_width;
 
@@ -274,7 +274,7 @@ bool Decoder::openVideo()
         else
         {
                 mImgConvertCtx = sws_getContext(mVideoCodecCtx->width, mVideoCodecCtx->height, mVideoCodecCtx->pix_fmt,
-                                                mVideoCodecCtx->width, mVideoCodecCtx->height, AV_PIX_FMT_BGR24, SWS_BICUBIC, NULL, NULL, NULL);
+                                                mVideoCodecCtx->width, mVideoCodecCtx->height, AV_PIX_FMT_BGR24, SWS_BICUBIC, nullptr, nullptr, nullptr);
         }
 
     }
@@ -289,11 +289,161 @@ void Decoder::closeVideo()
 
             avcodec_close(mVideoCodecCtx);
 
-            mVideoCodecCtx = NULL;
+            mVideoCodecCtx = nullptr;
 
-            mVideoCodec = NULL;
+            mVideoCodec = nullptr;
 
             videoStreamIndex = 0;
 
         }
 }
+
+
+
+/*
+bool BMPSave(const char *pFileName, AVFrame * frame, int w, int h)
+
+{
+
+    bool bResult = false;
+
+
+
+    if (frame)
+
+    {
+
+        FILE* file = fopen(pFileName, "wb");
+
+        if (file)
+
+        {
+
+            // RGB image
+
+            int imageSizeInBytes = 3 * w * h;
+
+            int headersSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+
+            int fileSize = headersSize + imageSizeInBytes;
+
+
+
+            uint8_t * pData = new uint8_t[headersSize];
+
+
+
+            if (pData != NULL)
+
+            {
+
+                BITMAPFILEHEADER& bfHeader = *((BITMAPFILEHEADER *)(pData));
+
+
+
+
+                bfHeader.bfType = 0x4D42; // WORD('M' << 8) | 'B';
+
+                bfHeader.bfSize = fileSize;
+
+                bfHeader.bfOffBits = headersSize;
+
+                bfHeader.bfReserved1 = bfHeader.bfReserved2 = 0;
+
+
+
+                BITMAPINFOHEADER& bmiHeader = *((BITMAPINFOHEADER *)(pData + headersSize - sizeof(BITMAPINFOHEADER)));
+
+
+
+                bmiHeader.biBitCount = 3 * 8;
+
+                bmiHeader.biWidth    = w;
+
+                bmiHeader.biHeight   = h;
+
+                bmiHeader.biPlanes   = 1;
+
+                bmiHeader.biSize     = sizeof(bmiHeader);
+
+                bmiHeader.biCompression = BI_RGB;
+
+                bmiHeader.biClrImportant = bmiHeader.biClrUsed =
+
+                    bmiHeader.biSizeImage = bmiHeader.biXPelsPerMeter =
+
+                    bmiHeader.biYPelsPerMeter = 0;
+                fwrite(pData, headersSize, 1, file);
+
+                uint8_t *pBits = frame->data[0] + frame->linesize[0] * h - frame->linesize[0];
+                int nSpan = frame->linesize[0];
+
+                int numberOfBytesToWrite = 3 * w;
+
+                for (size_t i = 0; i < h; ++i, pBits -= nSpan)
+                {
+
+                    fwrite(pBits, numberOfBytesToWrite, 1, file);
+                }
+                bResult = true;
+
+                delete [] pData;
+            }
+            fclose(file);
+        }
+
+    }
+
+
+
+    return bResult;
+
+}
+*/
+
+
+
+
+/*
+//Decoder decoder;
+Decoder *decoder = new Decoder();
+
+if(decoder->openFile(videoInPut))
+{
+    width = decoder->getWidth();
+    height = decoder->getHeight();
+
+    for (int i = 0; i < 3; i++)
+
+        {
+
+          AVFrame * frame = decoder->GetNextFrame();
+
+          if (frame)
+
+          {
+
+            QString asd = frameOutPut + QString::number(i) + ".bmp";
+
+            if (!BMPSave(asd.toUtf8().constData(), frame, frame->width, frame->height))
+            {
+
+              qDebug() << "Cannot save file" << asd;
+
+            }
+
+            av_free(frame->data[0]);
+
+            av_free(frame);
+
+          }
+
+        }
+}
+
+
+
+
+
+*/
+

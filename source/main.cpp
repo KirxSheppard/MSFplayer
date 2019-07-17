@@ -7,128 +7,30 @@
 #include <QThread>
 #include <QImage>
 #include <iostream>
+#include <QtEndian>
 
-const QString videoInPut = "E:/Episode 2.m4v";
-const QString frameOutPut = "C:/Users/Sheppard/Desktop/";
+const QString videoInPut = "E:/5_001_01.mov";
+const QString frameOutPut = "C:/Users/Sheppard/Desktop/test/";
+const double desiredPos = 2.34;
+const int numOfFrames = 10;
 
-
-AVFormatContext *fmtCtx = NULL;
-AVCodecContext *codexCtx = NULL;
-AVCodec *codec = NULL;
-AVStream *stream = NULL;
-AVPacket *pkt = NULL;
-AVFrame *frame = NULL;
-SwsContext *swsCtx = NULL;
+AVFormatContext *fmtCtx = nullptr;
+AVCodecContext *codexCtx = nullptr;
+AVCodec *codec = nullptr;
+AVStream *stream = nullptr;
+AVPacket *pkt = nullptr;
+AVFrame *frame = nullptr;
+SwsContext *swsCtx = nullptr;
 
 qint64 startTime = 0;
 qint64 numFrames = 0;
 
-bool eof = false;
-
 bool hasFrameAfterSeek = false;
 
+
+
+
 using namespace std;
-/*
-bool BMPSave(const char *pFileName, AVFrame * frame, int w, int h)
-
-{
-
-    bool bResult = false;
-
-
-
-    if (frame)
-
-    {
-
-        FILE* file = fopen(pFileName, "wb");
-
-        if (file)
-
-        {
-
-            // RGB image
-
-            int imageSizeInBytes = 3 * w * h;
-
-            int headersSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
-
-            int fileSize = headersSize + imageSizeInBytes;
-
-
-
-            uint8_t * pData = new uint8_t[headersSize];
-
-
-
-            if (pData != NULL)
-
-            {
-
-                BITMAPFILEHEADER& bfHeader = *((BITMAPFILEHEADER *)(pData));
-
-
-
-
-                bfHeader.bfType = 0x4D42; // WORD('M' << 8) | 'B';
-
-                bfHeader.bfSize = fileSize;
-
-                bfHeader.bfOffBits = headersSize;
-
-                bfHeader.bfReserved1 = bfHeader.bfReserved2 = 0;
-
-
-
-                BITMAPINFOHEADER& bmiHeader = *((BITMAPINFOHEADER *)(pData + headersSize - sizeof(BITMAPINFOHEADER)));
-
-
-
-                bmiHeader.biBitCount = 3 * 8;
-
-                bmiHeader.biWidth    = w;
-
-                bmiHeader.biHeight   = h;
-
-                bmiHeader.biPlanes   = 1;
-
-                bmiHeader.biSize     = sizeof(bmiHeader);
-
-                bmiHeader.biCompression = BI_RGB;
-
-                bmiHeader.biClrImportant = bmiHeader.biClrUsed =
-
-                    bmiHeader.biSizeImage = bmiHeader.biXPelsPerMeter =
-
-                    bmiHeader.biYPelsPerMeter = 0;
-                fwrite(pData, headersSize, 1, file);
-
-                uint8_t *pBits = frame->data[0] + frame->linesize[0] * h - frame->linesize[0];
-                int nSpan = frame->linesize[0];
-
-                int numberOfBytesToWrite = 3 * w;
-
-                for (size_t i = 0; i < h; ++i, pBits -= nSpan)
-                {
-
-                    fwrite(pBits, numberOfBytesToWrite, 1, file);
-                }
-                bResult = true;
-
-                delete [] pData;
-            }
-            fclose(file);
-        }
-
-    }
-
-
-
-    return bResult;
-
-}
-*/
-
 
 enum class GetFrame
 {
@@ -146,10 +48,6 @@ bool getPacket()
         const int ret = av_read_frame(fmtCtx, pkt);
         if (ret < 0)
         {
-            if (ret == AVERROR_EOF)
-            {
-                eof = true;
-            }
             break;
         }
         if (pkt->stream_index == stream->index)
@@ -180,7 +78,7 @@ bool readFrame()
 {
     if(receiveFrame() == GetFrame::Ok) return true;
 
-    while((pkt->data != NULL) || (getPacket()==true))
+    while((pkt->data != nullptr) || (getPacket()==true))
     {
         const int ret = avcodec_send_packet(codexCtx, pkt);
         av_packet_unref(pkt); // Now the packet data is nullptr
@@ -213,18 +111,21 @@ bool readFrame()
 
 int main(int argc, char *argv[])
 {
+    qInstallMessageHandler([](QtMsgType t , const QMessageLogContext &c, const QString &s) {
+        cerr << c.file << ":" << c.line << " " << qUtf8Printable(qFormatLogMessage(t, c, s)) << endl;
+    });
 
     fmtCtx = avformat_alloc_context();
    // fmtCtx->flags |= AVFMT_FLAG_GENPTS; // potrzebne mi to?
 
     if(avformat_open_input(&fmtCtx, videoInPut.toUtf8().constData(), nullptr, nullptr) != 0) return 0;
 
-    if(avformat_find_stream_info(fmtCtx, NULL) < 0) return 0;
+    if(avformat_find_stream_info(fmtCtx, nullptr) < 0) return 0;
 
-    AVCodec *decoder = NULL;
+    AVCodec *decoder = nullptr;
     const int streamIdx = av_find_best_stream(fmtCtx, AVMEDIA_TYPE_VIDEO, -1, -1, &decoder, 0);
 
-    if((decoder == NULL) || (streamIdx < 0)) return 0;
+    if((decoder == nullptr) || (streamIdx < 0)) return 0;
 
     stream = fmtCtx->streams[streamIdx];
     if(!stream) return 0;
@@ -238,19 +139,24 @@ int main(int argc, char *argv[])
     codexCtx->thread_type = FF_THREAD_FRAME;
 
 
-   if(avcodec_open2(codexCtx, codec, NULL) < 0) return 0;
+   if(avcodec_open2(codexCtx, codec, nullptr) < 0) return 0;
 
    pkt = av_packet_alloc();
    frame = av_frame_alloc();
 
-   int64_t ts = stream->time_base.den * 60.34 / stream->time_base.num;
+
+
+   int64_t ts = stream->time_base.den * desiredPos / stream->time_base.num;
    cerr << ts << endl;
    if (av_seek_frame(fmtCtx, stream->index, ts, AVSEEK_FLAG_BACKWARD) >= 0)
+   {
        avcodec_flush_buffers(codexCtx);
+   }
 
    bool canRead = true;
    bool fluhed = false;
    int f = 0;
+   AVFrame *prev = nullptr;
    for (;;)
    {
        int err;
@@ -262,6 +168,15 @@ int main(int argc, char *argv[])
            {
                canRead = false;
            }
+
+
+//           qDebug() <<"pts: "<<pkt->pts;
+//           qDebug() <<"dts: "<<pkt->dts;
+//           qDebug() << bool(pkt->flags & AV_PKT_FLAG_KEY)
+//                    << av_get_picture_type_char(frame->pict_type);
+
+//           qDebug("packet flags: %d picture type: %c\n", pkt->flags,
+//                      av_get_picture_type_char(frame->pict_type));
 
            if (pkt->stream_index != stream->index)
            {
@@ -291,68 +206,72 @@ int main(int argc, char *argv[])
        else if (err != 0)
            break;
 
-       QImage grayScale(frame->data[0], frame->width, frame->height, frame->linesize[0], QImage::Format_Grayscale8);
-       grayScale.save(QString(frameOutPut + "test/temp%1.tiff").arg(f, 6, 10, QLatin1Char('0')));
+       const double currPos = av_q2d(stream->time_base) * frame->best_effort_timestamp;
+
+       if (currPos < desiredPos)
+           continue;
+
+       qDebug() << currPos
+                << av_get_picture_type_char(frame->pict_type)
+                << frame->key_frame;
+
+       QImage grayScale;
+
+       auto pixFmtDescr = av_pix_fmt_desc_get((AVPixelFormat)frame->format);
+       if (pixFmtDescr && pixFmtDescr->comp[0].depth > 8)
+       {
+           grayScale = QImage(frame->width, frame->height, QImage::Format_Grayscale8); //do zmiany gdy chce kolorki
+
+           uint16_t *src = (uint16_t *)frame->data[0];
+           uint16_t *src2 = (uint16_t *)(prev ? prev : frame)->data[0];
+
+           int dstLineSize = grayScale.bytesPerLine();
+           uint8_t *dst = grayScale.bits();
+
+           for (int y = 0; y < frame->height; ++y)
+           {
+               for (int x = 0; x < frame->width; ++x)
+               {
+                   double p1 = src[y * frame->linesize[0] / 2 + x] / 1023.0;
+                   double p2 = src2[y * frame->linesize[0] / 2 + x] / 1023.0;
+
+                   double p = (p1 + p2) / 2.0;
+
+                   dst[y * dstLineSize + x] = clamp(p, 0.0, 1.0) * 255;
+
+//                   p >>= 2;
+//                   dst[y * dstLineSize + x] = p;
+               }
+           }
+       }
+       else
+       {
+           grayScale = QImage(frame->data[0], frame->width, frame->height, frame->linesize[0], QImage::Format_Grayscale8);
+       }
+       grayScale.save(QString(frameOutPut + "TE%1.tiff").arg(f, 6, 10, QLatin1Char('0')));
+
+       if (!prev)
+           prev = av_frame_alloc();
+       else
+           av_frame_unref(prev);
+       av_frame_ref(prev, frame);
 
        ++f;
+       if(f==numOfFrames) break; //saves only the given number of frames
     }
+
+   av_frame_free(&prev);
+
+  // return 0;
 
     int width = codexCtx->width;
     int height = codexCtx->height;
 
-
     QApplication a(argc, argv);
     MainWindow w;
-    w.setFixedSize(width, height);
+    w.setFixedSize(width/2, height/2);
     w.show();
-    w.setWindowTitle("FFMPEG frame decoder");
-
-
-
-
-    /*
-    //Decoder decoder;
-    Decoder *decoder = new Decoder();
-
-    if(decoder->openFile(videoInPut))
-    {
-        width = decoder->getWidth();
-        height = decoder->getHeight();
-
-        for (int i = 0; i < 3; i++)
-
-            {
-
-              AVFrame * frame = decoder->GetNextFrame();
-
-              if (frame)
-
-              {
-
-                QString asd = frameOutPut + QString::number(i) + ".bmp";
-
-                if (!BMPSave(asd.toUtf8().constData(), frame, frame->width, frame->height))
-                {
-
-                  qDebug() << "Cannot save file" << asd;
-
-                }
-
-                av_free(frame->data[0]);
-
-                av_free(frame);
-
-              }
-
-            }
-    }
-
-
-
-
-
-    */
-
+    w.setWindowTitle("TE000000.tiff");
 
     qDebug("%X", avformat_version());
 
