@@ -9,9 +9,12 @@
 
 const QString videoInPut = "E:/5_001_01.mov";
 const QString frameOutPut = "C:/Users/Sheppard/Desktop/test/";
-const QString msfLogo = "E:/test_waterMark2.png";
+const QString msfLogo = "E:/ikona msf small.png";
 const double desiredPos = 0;
 const int numOfFrames = 10;
+
+const int logoHeight = 200;
+const int logoWidth = 200;
 
 AVFormatContext *fmtCtx = nullptr;
 AVCodecContext *codexCtx = nullptr;
@@ -164,7 +167,7 @@ int main(int argc, char *argv[])
    QElapsedTimer et;
 
    QImage waterMark(msfLogo);
-//   qDebug() << waterMark.format();
+   //qDebug() << waterMark.format();
 
    for (;;)
    {
@@ -242,21 +245,31 @@ int main(int argc, char *argv[])
            int dstLineSize = grayScale.bytesPerLine();
            uint8_t *dst = grayScale.bits();
 
-
-
+           int yLogo = 0;
            for (int y = 0; y < frame->height; ++y)
            {
+               if(y > frame->height - logoHeight - 20) ++yLogo;
+               int xLogo = 0;
+
                for (int x = 0; x < frame->width; ++x)
-               {
+               {                  
+                   if(x > frame->width - logoWidth) ++xLogo;
+
                    double p1 = src[y * frame->linesize[0] / 2 + x] / 1023.0;
                    double p2 = src2[y * frame->linesize[0] / 2 + x] / 1023.0;
-                   double p3a = srcLogo[y * logoLineSize + x * 4 + 0] / 255.0;
-                   double p3 = srcLogo[y * logoLineSize + x * 4 + 3] / 255.0;
-                   //qDebug()<<p3;
+
 
                    double p = (p1 + p2) / 2.0;
-//                   p += 0.3;
-                   p = p * p3a + p3 * p3a * (1.0 - p3a);
+//                   p += 0.3; //brightness
+
+                   if(xLogo < logoWidth  &&  yLogo < logoHeight )
+                   {
+                       double p3a = srcLogo[yLogo * logoLineSize + xLogo * 4 + 0] / 255.0;
+                       double p3 = srcLogo[yLogo * logoLineSize + xLogo * 4 + 3] / 255.0;
+                      // p = p * p3a + p3 * p3a * (1.0 - p3a);
+                       p+=p3;
+                   }
+
 
                    dst[y * dstLineSize + x] = clamp(p, 0.0, 1.0) * 255;
 
@@ -267,7 +280,50 @@ int main(int argc, char *argv[])
        }
        else
        {
-           grayScale = QImage(frame->data[0], frame->width, frame->height, frame->linesize[0], QImage::Format_Grayscale8);
+           grayScale = QImage( frame->width, frame->height, QImage::Format_Grayscale8);
+
+           uint8_t *src = (uint8_t *)frame->data[0];
+           uint8_t *src2 = (uint8_t *)(prev ? prev : frame)->data[0]; //second layer
+
+           int logoLineSize = waterMark.bytesPerLine();
+           uint8_t *srcLogo = waterMark.bits();
+
+           int dstLineSize = grayScale.bytesPerLine();
+           uint8_t *dst = grayScale.bits();
+
+
+           int yLogo = 0;
+
+           for (int y = 0; y < frame->height; ++y)
+           {
+
+               if(y > frame->height - logoHeight-20) ++yLogo;
+               int xLogo = 0;
+
+               for (int x = 0; x < frame->width; ++x)
+               {
+
+                   if(x > frame->width - logoWidth) ++xLogo;
+
+                   double p1 = src[y * frame->linesize[0] + x] / 255.0;
+                   double p2 = src2[y * frame->linesize[0] + x] / 255.0;
+
+                   double p = (p1 + p2) / 2.0;
+                   //p += 0.3; //brightness
+
+                   if(xLogo < logoWidth  &&  yLogo < logoHeight)
+                   {
+
+                        //double p3 = srcLogo[y * logoLineSize + x * 4 + 0] / 255.0;
+                        double p3a = srcLogo[yLogo * logoLineSize + xLogo * 4 + 3] / 255.0;
+
+                       // p = p * p3a + p3*(1.0-p3a); //alpha channel
+                       // p = fmod(p * p3a + p3 * p3a * (1.0 - p3a),(p3a + (1.0 - p3a)));
+                        p += p3a;
+                   }
+                   dst[y * dstLineSize + x] = clamp(p, 0.0, 1.0) * 255;
+               }
+           }
        }
 
        if (et.isValid() && prev)
@@ -282,29 +338,26 @@ int main(int argc, char *argv[])
        }
        et.start();
 
+       int width = codexCtx->width;
+       int height = codexCtx->height;
+
+       w.setFixedSize(width/2, height/2);
        w.setImage(grayScale);
        a.processEvents();
 
-//       grayScale.save(QString(frameOutPut + "TE%1.tiff").arg(f, 6, 10, QLatin1Char('0')));
+       //grayScale.save(QString(frameOutPut + "TE%1.tiff").arg(f, 6, 10, QLatin1Char('0'))); //time consuming
 
        if (!prev)
            prev = av_frame_alloc();
        else
-           av_frame_unref(prev);
+       av_frame_unref(prev);
        av_frame_ref(prev, frame);
 
        ++f;
 //       if(f==numOfFrames) break; //saves only the given number of frames
     }
 
-   av_frame_free(&prev);
-
-//    int width = codexCtx->width;
-//    int height = codexCtx->height;
-
-
-//    w.setFixedSize(width/2, height/2);
-//    w.show();
+    av_frame_free(&prev);
 
     return a.exec();
 }
