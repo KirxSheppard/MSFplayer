@@ -1,17 +1,16 @@
-#include <windows.h>
 #include "mainwindow.h"
 #include <QApplication>
 #include <QDebug>
 #include "includeffmpeg.h"
-#include "decoder.hpp"
-#include <QThread>
 #include <QImage>
 #include <iostream>
-#include <QtEndian>
+#include <QElapsedTimer>
+#include <QThread>
 
 const QString videoInPut = "E:/5_001_01.mov";
 const QString frameOutPut = "C:/Users/Sheppard/Desktop/test/";
-const double desiredPos = 2.34;
+const QString msfLogo = "E:/test_waterMark2.png";
+const double desiredPos = 0;
 const int numOfFrames = 10;
 
 AVFormatContext *fmtCtx = nullptr;
@@ -109,11 +108,18 @@ bool readFrame()
     return false;
 }
 
+
+
 int main(int argc, char *argv[])
 {
     qInstallMessageHandler([](QtMsgType t , const QMessageLogContext &c, const QString &s) {
-        cerr << c.file << ":" << c.line << " " << qUtf8Printable(qFormatLogMessage(t, c, s)) << endl;
+        cerr << c.line << " " << qUtf8Printable(qFormatLogMessage(t, c, s)) << endl;
     });
+
+    QApplication a(argc, argv);
+
+    MainWindow w;
+    w.show();
 
     fmtCtx = avformat_alloc_context();
    // fmtCtx->flags |= AVFMT_FLAG_GENPTS; // potrzebne mi to?
@@ -138,25 +144,28 @@ int main(int argc, char *argv[])
     codexCtx->thread_count = QThread::idealThreadCount();
     codexCtx->thread_type = FF_THREAD_FRAME;
 
-
    if(avcodec_open2(codexCtx, codec, nullptr) < 0) return 0;
 
    pkt = av_packet_alloc();
    frame = av_frame_alloc();
 
-
-
-   int64_t ts = stream->time_base.den * desiredPos / stream->time_base.num;
-   cerr << ts << endl;
-   if (av_seek_frame(fmtCtx, stream->index, ts, AVSEEK_FLAG_BACKWARD) >= 0)
-   {
-       avcodec_flush_buffers(codexCtx);
-   }
+//   int64_t ts = stream->time_base.den * desiredPos / stream->time_base.num;
+//   cerr << ts << endl;
+//   if (av_seek_frame(fmtCtx, stream->index, ts, AVSEEK_FLAG_BACKWARD) >= 0)
+//   {
+//       avcodec_flush_buffers(codexCtx);
+//   }
 
    bool canRead = true;
    bool fluhed = false;
    int f = 0;
    AVFrame *prev = nullptr;
+
+   QElapsedTimer et;
+
+   QImage waterMark(msfLogo);
+//   qDebug() << waterMark.format();
+
    for (;;)
    {
        int err;
@@ -218,15 +227,22 @@ int main(int argc, char *argv[])
        QImage grayScale;
 
        auto pixFmtDescr = av_pix_fmt_desc_get((AVPixelFormat)frame->format);
+
        if (pixFmtDescr && pixFmtDescr->comp[0].depth > 8)
        {
+
            grayScale = QImage(frame->width, frame->height, QImage::Format_Grayscale8); //do zmiany gdy chce kolorki
 
            uint16_t *src = (uint16_t *)frame->data[0];
-           uint16_t *src2 = (uint16_t *)(prev ? prev : frame)->data[0];
+           uint16_t *src2 = (uint16_t *)(prev ? prev : frame)->data[0]; //second layer
+
+           int logoLineSize = waterMark.bytesPerLine();
+           uint8_t *srcLogo = waterMark.bits();
 
            int dstLineSize = grayScale.bytesPerLine();
            uint8_t *dst = grayScale.bits();
+
+
 
            for (int y = 0; y < frame->height; ++y)
            {
@@ -234,8 +250,13 @@ int main(int argc, char *argv[])
                {
                    double p1 = src[y * frame->linesize[0] / 2 + x] / 1023.0;
                    double p2 = src2[y * frame->linesize[0] / 2 + x] / 1023.0;
+                   double p3a = srcLogo[y * logoLineSize + x * 4 + 0] / 255.0;
+                   double p3 = srcLogo[y * logoLineSize + x * 4 + 3] / 255.0;
+                   //qDebug()<<p3;
 
                    double p = (p1 + p2) / 2.0;
+//                   p += 0.3;
+                   p = p * p3a + p3 * p3a * (1.0 - p3a);
 
                    dst[y * dstLineSize + x] = clamp(p, 0.0, 1.0) * 255;
 
@@ -248,7 +269,23 @@ int main(int argc, char *argv[])
        {
            grayScale = QImage(frame->data[0], frame->width, frame->height, frame->linesize[0], QImage::Format_Grayscale8);
        }
-       grayScale.save(QString(frameOutPut + "TE%1.tiff").arg(f, 6, 10, QLatin1Char('0')));
+
+       if (et.isValid() && prev)
+       {
+           double t = et.nsecsElapsed() / 1e9;
+
+           double frameTime = av_q2d(stream->time_base) * (frame->best_effort_timestamp - prev->best_effort_timestamp);
+
+           int sleepTime = (frameTime - t) * 1000;
+           if (sleepTime > 0)
+               QThread::msleep(sleepTime);
+       }
+       et.start();
+
+       w.setImage(grayScale);
+       a.processEvents();
+
+//       grayScale.save(QString(frameOutPut + "TE%1.tiff").arg(f, 6, 10, QLatin1Char('0')));
 
        if (!prev)
            prev = av_frame_alloc();
@@ -257,24 +294,17 @@ int main(int argc, char *argv[])
        av_frame_ref(prev, frame);
 
        ++f;
-       if(f==numOfFrames) break; //saves only the given number of frames
+//       if(f==numOfFrames) break; //saves only the given number of frames
     }
 
    av_frame_free(&prev);
 
-  // return 0;
+//    int width = codexCtx->width;
+//    int height = codexCtx->height;
 
-    int width = codexCtx->width;
-    int height = codexCtx->height;
 
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.setFixedSize(width/2, height/2);
-    w.show();
-    w.setWindowTitle("TE000000.tiff");
+//    w.setFixedSize(width/2, height/2);
+//    w.show();
 
-    qDebug("%X", avformat_version());
-
-    avcodec_flush_buffers(codexCtx);
     return a.exec();
 }

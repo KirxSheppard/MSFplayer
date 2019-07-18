@@ -31,6 +31,8 @@ file(GLOB PROJECT_FILES
     "source/*.h"
 )
 
+add_definitions(-DQT_MESSAGELOGCONTEXT)
+
 add_executable(${PROJECT_NAME} WIN32 ${PROJECT_FILES})
 
 ###############################################################################

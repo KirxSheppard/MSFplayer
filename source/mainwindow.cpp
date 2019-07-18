@@ -13,11 +13,14 @@ MainWindow::~MainWindow()
 {
 }
 
+void MainWindow::setImage(const QImage &img)
+{
+    m_img = img;
+    update();
+}
+
 void MainWindow::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
-    QPixmap img("C:/Users/Sheppard/Desktop/test/TE000000.tiff");
-    QPixmap img2 = img.scaled(960, 540, KeepAspectRatio);
-        painter.drawPixmap(0, 0, QPixmap(img2));
-
+    painter.drawImage(rect(), m_img);
 }
