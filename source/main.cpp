@@ -1,13 +1,15 @@
 #include "mainwindow.h"
 #include <QApplication>
 #include <QDebug>
+#include <QPainter>
 #include "includeffmpeg.h"
 #include <QImage>
 #include <iostream>
 #include <QElapsedTimer>
 #include <QThread>
 
-const QString videoInPut = "E:/5_001_01.mov";
+//const QString videoInPut = "E:/5_001_01.mov"; //10-bit video
+const QString videoInPut = "E:/Episode 2.m4v"; //8-bit video
 const QString frameOutPut = "C:/Users/Sheppard/Desktop/test/";
 const QString msfLogo = "E:/ikona msf small.png";
 const double desiredPos = 0;
@@ -22,14 +24,12 @@ AVCodec *codec = nullptr;
 AVStream *stream = nullptr;
 AVPacket *pkt = nullptr;
 AVFrame *frame = nullptr;
-SwsContext *swsCtx = nullptr;
+struct SwsContext *swsCtx = nullptr;
 
 qint64 startTime = 0;
 qint64 numFrames = 0;
 
 bool hasFrameAfterSeek = false;
-
-
 
 
 using namespace std;
@@ -40,6 +40,9 @@ enum class GetFrame
     Again,
     Ok,
 };
+
+
+
 
 bool getPacket()
 {
@@ -107,11 +110,8 @@ bool readFrame()
     {
         return true;
     }
-
     return false;
 }
-
-
 
 int main(int argc, char *argv[])
 {
@@ -169,6 +169,12 @@ int main(int argc, char *argv[])
    QImage waterMark(msfLogo);
    //qDebug() << waterMark.format();
 
+   int pos = videoInPut.length() - videoInPut.lastIndexOf('/') - 1;
+//   videoInPut.length()
+   qDebug()<<"Last pos = "<<pos;
+   QString winName = videoInPut.right(pos);
+
+
    for (;;)
    {
        int err;
@@ -223,27 +229,64 @@ int main(int argc, char *argv[])
        if (currPos < desiredPos)
            continue;
 
+       if (!swsCtx)
+       {
+           swsCtx = sws_getContext(
+                frame->width,
+                frame->height,
+                (AVPixelFormat)frame->format,
+                frame->width,
+                frame->height,
+                AV_PIX_FMT_BGRA,
+                SWS_BILINEAR,
+                nullptr,
+                nullptr,
+                nullptr
+            );
+       }
+
        qDebug() << currPos
                 << av_get_picture_type_char(frame->pict_type)
                 << frame->key_frame;
 
-       QImage grayScale;
+       QImage qimg;
 
-       auto pixFmtDescr = av_pix_fmt_desc_get((AVPixelFormat)frame->format);
+//       auto pixFmtDescr = av_pix_fmt_desc_get((AVPixelFormat)frame->format);
 
-       if (pixFmtDescr && pixFmtDescr->comp[0].depth > 8)
+      // if (pixFmtDescr && pixFmtDescr->comp[0].depth > 8)
        {
 
-           grayScale = QImage(frame->width, frame->height, QImage::Format_Grayscale8); //do zmiany gdy chce kolorki
+           qimg = QImage(frame->width, frame->height, QImage::Format_ARGB32); //do zmiany gdy chce kolorki
 
+           uint8_t *dstData[] {
+               qimg.bits()
+           };
+           int dstLinesize[] {
+               qimg.bytesPerLine()
+           };
+           sws_scale(
+                swsCtx,
+                frame->data,
+                frame->linesize,
+                0,
+                frame->height,
+                dstData,
+                dstLinesize
+            );
+
+           QPainter painter(&qimg);
+           painter.setCompositionMode(QPainter::CompositionMode_Xor);
+           painter.drawImage(frame->width - logoWidth, frame->height - logoHeight-20, waterMark);
+
+#if 0
            uint16_t *src = (uint16_t *)frame->data[0];
-           uint16_t *src2 = (uint16_t *)(prev ? prev : frame)->data[0]; //second layer
+           //uint64_t *src2 = (uint64_t *)(prev ? prev : frame)->data[0]; //second layer
 
            int logoLineSize = waterMark.bytesPerLine();
            uint8_t *srcLogo = waterMark.bits();
 
            int dstLineSize = grayScale.bytesPerLine();
-           uint8_t *dst = grayScale.bits();
+           uint16_t *dst = (uint16_t *) grayScale.bits();
 
            int yLogo = 0;
            for (int y = 0; y < frame->height; ++y)
@@ -252,26 +295,35 @@ int main(int argc, char *argv[])
                int xLogo = 0;
 
                for (int x = 0; x < frame->width; ++x)
-               {                  
+               {
+
                    if(x > frame->width - logoWidth) ++xLogo;
 
-                   double p1 = src[y * frame->linesize[0] / 2 + x] / 1023.0;
-                   double p2 = src2[y * frame->linesize[0] / 2 + x] / 1023.0;
+                   double p1 = src[y * frame->linesize[0] / 2 + x] / 65535.0;
+                   double p2 = src[y+1 * frame->linesize[0] / 8 + x+1] / 65535.0;
+                   double p3 = src[y+2 * frame->linesize[0] / 8 + x+2] / 65535.0;
+                   double p4 = src[y+3 * frame->linesize[0] / 8 + x+3] / 65535.0;
+                   //double p2 = src2[y * frame->linesize[0] / 2 + x] / 1023.0;
 
 
-                   double p = (p1 + p2) / 2.0;
+                   double p = (p1+ p2 + p3 + p4)/ 4.0;// + p2) / 2.0;
 //                   p += 0.3; //brightness
 
                    if(xLogo < logoWidth  &&  yLogo < logoHeight )
                    {
-                       double p3a = srcLogo[yLogo * logoLineSize + xLogo * 4 + 0] / 255.0;
-                       double p3 = srcLogo[yLogo * logoLineSize + xLogo * 4 + 3] / 255.0;
+                       double p3 = srcLogo[yLogo * logoLineSize + xLogo * 4 + 0] / 255.0;
+                       double p3a = srcLogo[yLogo * logoLineSize + xLogo * 4 + 3] / 255.0;
                       // p = p * p3a + p3 * p3a * (1.0 - p3a);
-                       p+=p3;
+                       p = (p3 * p3a + p * (1.0 - p3a)); //alpha channel with the original color
+//                       p+=p3;
                    }
 
 
                    dst[y * dstLineSize + x] = clamp(p, 0.0, 1.0) * 255;
+                   dst[y+1 * dstLineSize + x+1] = clamp(p2, 0.0, 1.0) * 255;
+                   dst[y+2 * dstLineSize + x+2] = clamp(p3, 0.0, 1.0) * 255;
+                   dst[y+3 * dstLineSize + x+3] = clamp(p4, 0.0, 1.0) * 255;
+
 
 //                   p >>= 2;
 //                   dst[y * dstLineSize + x] = p;
@@ -309,21 +361,22 @@ int main(int argc, char *argv[])
                    double p2 = src2[y * frame->linesize[0] + x] / 255.0;
 
                    double p = (p1 + p2) / 2.0;
-                   //p += 0.3; //brightness
+//                   p += 0.3; //brightness
 
                    if(xLogo < logoWidth  &&  yLogo < logoHeight)
                    {
 
-                        //double p3 = srcLogo[y * logoLineSize + x * 4 + 0] / 255.0;
+                        double p3 = srcLogo[yLogo * logoLineSize + xLogo * 4 + 0] / 255.0;
                         double p3a = srcLogo[yLogo * logoLineSize + xLogo * 4 + 3] / 255.0;
 
-                       // p = p * p3a + p3*(1.0-p3a); //alpha channel
-                       // p = fmod(p * p3a + p3 * p3a * (1.0 - p3a),(p3a + (1.0 - p3a)));
-                        p += p3a;
+//                        p = (p3 * p3a + p * (1.0 - p3a)); //alpha channel with the original color
+//                        p = fmod(p * p3a + p * p3* (1.0 - p3a),(p3a + p3*(1.0 - p3a)));
+                        p += p3a; //adds white logo instead of black one
                    }
                    dst[y * dstLineSize + x] = clamp(p, 0.0, 1.0) * 255;
                }
            }
+#endif
        }
 
        if (et.isValid() && prev)
@@ -342,10 +395,13 @@ int main(int argc, char *argv[])
        int height = codexCtx->height;
 
        w.setFixedSize(width/2, height/2);
-       w.setImage(grayScale);
+       w.setImage(qimg);
+       w.setWindowTitle(winName);
        a.processEvents();
+       if (!w.isVisible())
+           break;
 
-       //grayScale.save(QString(frameOutPut + "TE%1.tiff").arg(f, 6, 10, QLatin1Char('0'))); //time consuming
+//       grayScale.save(QString(frameOutPut + "TE%1.tiff").arg(f, 6, 10, QLatin1Char('0'))); //time consuming
 
        if (!prev)
            prev = av_frame_alloc();
@@ -359,5 +415,5 @@ int main(int argc, char *argv[])
 
     av_frame_free(&prev);
 
-    return a.exec();
+    return 0;//a.exec();
 }
