@@ -12,8 +12,8 @@
 const QString videoInPut = "E:/Episode 2.m4v"; //8-bit video
 const QString frameOutPut = "C:/Users/Sheppard/Desktop/test/";
 const QString msfLogo = "E:/ikona msf small.png";
-const double desiredPos = 0;
-const int numOfFrames = 10;
+const double desiredPos = 13;
+const int numOfFrames = 30;
 
 const int logoHeight = 200;
 const int logoWidth = 200;
@@ -40,9 +40,6 @@ enum class GetFrame
     Again,
     Ok,
 };
-
-
-
 
 bool getPacket()
 {
@@ -152,12 +149,12 @@ int main(int argc, char *argv[])
    pkt = av_packet_alloc();
    frame = av_frame_alloc();
 
-//   int64_t ts = stream->time_base.den * desiredPos / stream->time_base.num;
-//   cerr << ts << endl;
-//   if (av_seek_frame(fmtCtx, stream->index, ts, AVSEEK_FLAG_BACKWARD) >= 0)
-//   {
-//       avcodec_flush_buffers(codexCtx);
-//   }
+   int64_t ts = stream->time_base.den * desiredPos / stream->time_base.num;
+   cerr << ts << endl;
+   if (av_seek_frame(fmtCtx, stream->index, ts, AVSEEK_FLAG_BACKWARD) >= 0)
+   {
+       avcodec_flush_buffers(codexCtx);
+   }
 
    bool canRead = true;
    bool fluhed = false;
@@ -170,8 +167,6 @@ int main(int argc, char *argv[])
    //qDebug() << waterMark.format();
 
    int pos = videoInPut.length() - videoInPut.lastIndexOf('/') - 1;
-//   videoInPut.length()
-   qDebug()<<"Last pos = "<<pos;
    QString winName = videoInPut.right(pos);
 
 
@@ -249,34 +244,62 @@ int main(int argc, char *argv[])
                 << av_get_picture_type_char(frame->pict_type)
                 << frame->key_frame;
 
-       QImage qimg;
+       QImage qImgs[2];
 
 //       auto pixFmtDescr = av_pix_fmt_desc_get((AVPixelFormat)frame->format);
 
       // if (pixFmtDescr && pixFmtDescr->comp[0].depth > 8)
+       if (prev)
        {
-
-           qimg = QImage(frame->width, frame->height, QImage::Format_ARGB32); //do zmiany gdy chce kolorki
-
-           uint8_t *dstData[] {
-               qimg.bits()
+           AVFrame *frames[] {
+               prev,
+               frame
            };
-           int dstLinesize[] {
-               qimg.bytesPerLine()
-           };
-           sws_scale(
-                swsCtx,
-                frame->data,
-                frame->linesize,
-                0,
-                frame->height,
-                dstData,
-                dstLinesize
-            );
 
-           QPainter painter(&qimg);
+           for (int i = 0; i < 2; ++i)
+           {
+               qImgs[i] = QImage(frames[i]->width, frames[i]->height, QImage::Format_ARGB32); //do zmiany gdy chce kolorki
+
+               uint8_t *dstData[] {
+                   qImgs[i].bits()
+               };
+               int dstLinesize[] {
+                   qImgs[i].bytesPerLine()
+               };
+
+               sws_scale(
+                    swsCtx,
+                    frames[i]->data,
+                    frames[i]->linesize,
+                    0,
+                    frames[i]->height,
+                    dstData,
+                    dstLinesize
+                );
+           }
+
+           {
+               uint8_t *data = qImgs[1].bits();
+               int w4 = qImgs[1].width() * 4;
+               int h = qImgs[1].height();
+               int ls = qImgs[1].bytesPerLine();
+               for (int y = 0; y < h; ++y)
+               {
+                   for (int x = 0; x < w4; x += 1)
+                   {
+                       data[y * ls + x] = clamp((int)data[y * ls + x] + 0, 0, 255);
+                   }
+               }
+           }
+
+           QPainter painter(&qImgs[1]);
            painter.setCompositionMode(QPainter::CompositionMode_Xor);
+           painter.setOpacity(0.4);
            painter.drawImage(frame->width - logoWidth, frame->height - logoHeight-20, waterMark);
+           painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+           painter.setOpacity(0.3);
+           painter.drawImage(0,0,qImgs[0]);
+           painter.end();
 
 #if 0
            uint16_t *src = (uint16_t *)frame->data[0];
@@ -315,7 +338,7 @@ int main(int argc, char *argv[])
                        double p3a = srcLogo[yLogo * logoLineSize + xLogo * 4 + 3] / 255.0;
                       // p = p * p3a + p3 * p3a * (1.0 - p3a);
                        p = (p3 * p3a + p * (1.0 - p3a)); //alpha channel with the original color
-//                       p+=p3;
+//                     p+=p3;
                    }
 
 
@@ -395,22 +418,32 @@ int main(int argc, char *argv[])
        int height = codexCtx->height;
 
        w.setFixedSize(width/2, height/2);
-       w.setImage(qimg);
+       w.setImage(qImgs[1]);
        w.setWindowTitle(winName);
        a.processEvents();
-       if (!w.isVisible())
+
+       if (!w.isVisible()) //closes program when window is closed
            break;
 
-//       grayScale.save(QString(frameOutPut + "TE%1.tiff").arg(f, 6, 10, QLatin1Char('0'))); //time consuming
+       //qImgs[1].save(QString(frameOutPut + "TE%1.tiff").arg(f, 6, 10, QLatin1Char('0'))); //time consuming
 
-       if (!prev)
+       if (!prev) //prev = av_frame_clone(frame);
            prev = av_frame_alloc();
        else
-       av_frame_unref(prev);
+           av_frame_unref(prev);
        av_frame_ref(prev, frame);
 
        ++f;
-//       if(f==numOfFrames) break; //saves only the given number of frames
+      if(f==numOfFrames)// break; //runs only the given number of frames
+      {
+          int64_t ts = stream->time_base.den * desiredPos / stream->time_base.num;
+          cerr << ts << endl;
+          if (av_seek_frame(fmtCtx, stream->index, ts, AVSEEK_FLAG_BACKWARD) >= 0)
+          {
+              avcodec_flush_buffers(codexCtx);
+          }
+          f=0;
+      }
     }
 
     av_frame_free(&prev);
