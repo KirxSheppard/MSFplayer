@@ -13,7 +13,7 @@ const QString videoInPut = "E:/Episode 2.m4v"; //8-bit video
 const QString frameOutPut = "C:/Users/Sheppard/Desktop/test/";
 const QString msfLogo = "E:/ikona msf small.png";
 const double desiredPos = 13;
-const int numOfFrames = 30;
+const int numOfFrames = 100;
 
 const int logoHeight = 200;
 const int logoWidth = 200;
@@ -118,7 +118,11 @@ int main(int argc, char *argv[])
 
     QApplication a(argc, argv);
 
-    MainWindow w;
+    int pos = videoInPut.length() - videoInPut.lastIndexOf('/') - 1;
+    QString winName = videoInPut.right(pos);
+
+
+    MainWindow w(winName, numOfFrames);
     w.show();
 
     fmtCtx = avformat_alloc_context();
@@ -127,6 +131,12 @@ int main(int argc, char *argv[])
     if(avformat_open_input(&fmtCtx, videoInPut.toUtf8().constData(), nullptr, nullptr) != 0) return 0;
 
     if(avformat_find_stream_info(fmtCtx, nullptr) < 0) return 0;
+
+
+    //Returns total video duration
+    double duration =  1.0* fmtCtx->duration / (AV_TIME_BASE * 1.0);
+    qDebug()<<"Video duration: "<< duration;
+
 
     AVCodec *decoder = nullptr;
     const int streamIdx = av_find_best_stream(fmtCtx, AVMEDIA_TYPE_VIDEO, -1, -1, &decoder, 0);
@@ -166,8 +176,6 @@ int main(int argc, char *argv[])
    QImage waterMark(msfLogo);
    //qDebug() << waterMark.format();
 
-   int pos = videoInPut.length() - videoInPut.lastIndexOf('/') - 1;
-   QString winName = videoInPut.right(pos);
 
 
    for (;;)
@@ -248,7 +256,8 @@ int main(int argc, char *argv[])
 
 //       auto pixFmtDescr = av_pix_fmt_desc_get((AVPixelFormat)frame->format);
 
-      // if (pixFmtDescr && pixFmtDescr->comp[0].depth > 8)
+//       if (pixFmtDescr && pixFmtDescr->comp[0].depth > 8)
+
        if (prev)
        {
            AVFrame *frames[] {
@@ -258,7 +267,7 @@ int main(int argc, char *argv[])
 
            for (int i = 0; i < 2; ++i)
            {
-               qImgs[i] = QImage(frames[i]->width, frames[i]->height, QImage::Format_ARGB32); //do zmiany gdy chce kolorki
+               qImgs[i] = QImage(frames[i]->width, frames[i]->height, QImage::Format_ARGB32);
 
                uint8_t *dstData[] {
                    qImgs[i].bits()
@@ -295,7 +304,7 @@ int main(int argc, char *argv[])
            QPainter painter(&qImgs[1]);
            painter.setCompositionMode(QPainter::CompositionMode_Xor);
            painter.setOpacity(0.4);
-           painter.drawImage(frame->width - logoWidth, frame->height - logoHeight-20, waterMark);
+           painter.drawImage(frame->width - logoWidth, 20, waterMark);
            painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
            painter.setOpacity(0.3);
            painter.drawImage(0,0,qImgs[0]);
@@ -419,20 +428,30 @@ int main(int argc, char *argv[])
 
        w.setFixedSize(width/2, height/2);
        w.setImage(qImgs[1]);
-       w.setWindowTitle(winName);
+       w.setSliderValue(numOfFrames, f);
+       w.setWindowTitle("MSF FFmpeg player");
+
+//       if(w.setFrame() != numOfFrames)
+//           f = w.setFrame();
+       qDebug()<<f;
        a.processEvents();
+
+       if(w.checkifExit() == true) break;
 
        if (!w.isVisible()) //closes program when window is closed
            break;
 
-       //qImgs[1].save(QString(frameOutPut + "TE%1.tiff").arg(f, 6, 10, QLatin1Char('0'))); //time consuming
-
+       if(w.checkifSave() == true)
+       {
+            qImgs[1].save(QString(frameOutPut + "TE%1.tiff").arg(f, 6, 10, QLatin1Char('0'))); //time consuming
+       }
        if (!prev) //prev = av_frame_clone(frame);
            prev = av_frame_alloc();
        else
            av_frame_unref(prev);
        av_frame_ref(prev, frame);
 
+       //f = w.on_horizontalSlider_valueChanged(int i);
        ++f;
       if(f==numOfFrames)// break; //runs only the given number of frames
       {

@@ -16,6 +16,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
 
 # Prevent "Default" builds
 if(NOT CMAKE_BUILD_TYPE)
@@ -29,6 +30,7 @@ file(GLOB PROJECT_FILES
     "source/*.cpp"
     "source/*.hpp"
     "source/*.h"
+    "source/*.ui"
 )
 
 add_definitions(-DQT_MESSAGELOGCONTEXT)
@@ -43,6 +45,8 @@ find_package(Qt5 COMPONENTS Widgets Core REQUIRED)
 target_include_directories(${PROJECT_NAME}
     PRIVATE
     "C:/Users/Sheppard/Downloads/ffmpeg-4.1.3-win64-dev/ffmpeg-4.1.3-win64-dev/include"
+    "source"
+    "forms"
 )
 
 target_link_libraries(${PROJECT_NAME}
