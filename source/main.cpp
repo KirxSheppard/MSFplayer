@@ -7,6 +7,7 @@
 #include <iostream>
 #include <QElapsedTimer>
 #include <QThread>
+#include <QGuiApplication>
 
 //const QString videoInPut = "E:/5_001_01.mov"; //10-bit video
 const QString videoInPut = "E:/Episode 2.m4v"; //8-bit video
@@ -121,7 +122,6 @@ int main(int argc, char *argv[])
     int pos = videoInPut.length() - videoInPut.lastIndexOf('/') - 1;
     QString winName = videoInPut.right(pos);
 
-
     MainWindow w(winName, numOfFrames);
     w.show();
 
@@ -176,10 +176,21 @@ int main(int argc, char *argv[])
    QImage waterMark(msfLogo);
    //qDebug() << waterMark.format();
 
-
-
    for (;;)
    {
+       if (w.checkifPaused())
+       {
+           a.processEvents();
+           QThread::msleep(10);
+
+           if(w.checkifExit() == true) break;
+
+           if (!w.isVisible()) //closes program when window is closed
+               break;
+
+           continue;
+       }
+
        int err;
 
        if (canRead)
@@ -302,113 +313,21 @@ int main(int argc, char *argv[])
            }
 
            QPainter painter(&qImgs[1]);
-           painter.setCompositionMode(QPainter::CompositionMode_Xor);
-           painter.setOpacity(0.4);
-           painter.drawImage(frame->width - logoWidth, 20, waterMark);
-           painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-           painter.setOpacity(0.3);
-           painter.drawImage(0,0,qImgs[0]);
-           painter.end();
 
-#if 0
-           uint16_t *src = (uint16_t *)frame->data[0];
-           //uint64_t *src2 = (uint64_t *)(prev ? prev : frame)->data[0]; //second layer
-
-           int logoLineSize = waterMark.bytesPerLine();
-           uint8_t *srcLogo = waterMark.bits();
-
-           int dstLineSize = grayScale.bytesPerLine();
-           uint16_t *dst = (uint16_t *) grayScale.bits();
-
-           int yLogo = 0;
-           for (int y = 0; y < frame->height; ++y)
+           if(f != 0)
            {
-               if(y > frame->height - logoHeight - 20) ++yLogo;
-               int xLogo = 0;
-
-               for (int x = 0; x < frame->width; ++x)
-               {
-
-                   if(x > frame->width - logoWidth) ++xLogo;
-
-                   double p1 = src[y * frame->linesize[0] / 2 + x] / 65535.0;
-                   double p2 = src[y+1 * frame->linesize[0] / 8 + x+1] / 65535.0;
-                   double p3 = src[y+2 * frame->linesize[0] / 8 + x+2] / 65535.0;
-                   double p4 = src[y+3 * frame->linesize[0] / 8 + x+3] / 65535.0;
-                   //double p2 = src2[y * frame->linesize[0] / 2 + x] / 1023.0;
-
-
-                   double p = (p1+ p2 + p3 + p4)/ 4.0;// + p2) / 2.0;
-//                   p += 0.3; //brightness
-
-                   if(xLogo < logoWidth  &&  yLogo < logoHeight )
-                   {
-                       double p3 = srcLogo[yLogo * logoLineSize + xLogo * 4 + 0] / 255.0;
-                       double p3a = srcLogo[yLogo * logoLineSize + xLogo * 4 + 3] / 255.0;
-                      // p = p * p3a + p3 * p3a * (1.0 - p3a);
-                       p = (p3 * p3a + p * (1.0 - p3a)); //alpha channel with the original color
-//                     p+=p3;
-                   }
-
-
-                   dst[y * dstLineSize + x] = clamp(p, 0.0, 1.0) * 255;
-                   dst[y+1 * dstLineSize + x+1] = clamp(p2, 0.0, 1.0) * 255;
-                   dst[y+2 * dstLineSize + x+2] = clamp(p3, 0.0, 1.0) * 255;
-                   dst[y+3 * dstLineSize + x+3] = clamp(p4, 0.0, 1.0) * 255;
-
-
-//                   p >>= 2;
-//                   dst[y * dstLineSize + x] = p;
-               }
+               painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+               painter.setOpacity(0.3);
+               painter.drawImage(0,0,qImgs[0]);
            }
-       }
-       else
-       {
-           grayScale = QImage( frame->width, frame->height, QImage::Format_Grayscale8);
-
-           uint8_t *src = (uint8_t *)frame->data[0];
-           uint8_t *src2 = (uint8_t *)(prev ? prev : frame)->data[0]; //second layer
-
-           int logoLineSize = waterMark.bytesPerLine();
-           uint8_t *srcLogo = waterMark.bits();
-
-           int dstLineSize = grayScale.bytesPerLine();
-           uint8_t *dst = grayScale.bits();
-
-
-           int yLogo = 0;
-
-           for (int y = 0; y < frame->height; ++y)
+           if(w.checkWaterMark() == true)
            {
-
-               if(y > frame->height - logoHeight-20) ++yLogo;
-               int xLogo = 0;
-
-               for (int x = 0; x < frame->width; ++x)
-               {
-
-                   if(x > frame->width - logoWidth) ++xLogo;
-
-                   double p1 = src[y * frame->linesize[0] + x] / 255.0;
-                   double p2 = src2[y * frame->linesize[0] + x] / 255.0;
-
-                   double p = (p1 + p2) / 2.0;
-//                   p += 0.3; //brightness
-
-                   if(xLogo < logoWidth  &&  yLogo < logoHeight)
-                   {
-
-                        double p3 = srcLogo[yLogo * logoLineSize + xLogo * 4 + 0] / 255.0;
-                        double p3a = srcLogo[yLogo * logoLineSize + xLogo * 4 + 3] / 255.0;
-
-//                        p = (p3 * p3a + p * (1.0 - p3a)); //alpha channel with the original color
-//                        p = fmod(p * p3a + p * p3* (1.0 - p3a),(p3a + p3*(1.0 - p3a)));
-                        p += p3a; //adds white logo instead of black one
-                   }
-                   dst[y * dstLineSize + x] = clamp(p, 0.0, 1.0) * 255;
-               }
+               painter.setCompositionMode(QPainter::CompositionMode_Xor);
+               painter.setOpacity(0.4);
+               painter.drawImage(frame->width - logoWidth, 20, waterMark);
+               painter.end();
            }
-#endif
+
        }
 
        if (et.isValid() && prev)

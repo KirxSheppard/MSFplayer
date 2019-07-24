@@ -31,6 +31,7 @@ file(GLOB PROJECT_FILES
     "source/*.hpp"
     "source/*.h"
     "source/*.ui"
+    "source/*.qrc"
 )
 
 add_definitions(-DQT_MESSAGELOGCONTEXT)

@@ -22,6 +22,8 @@ public:
     int setFrame();
     bool checkifExit();
     bool checkifSave();
+    bool checkifPaused();
+    bool checkWaterMark();
 
 
 
@@ -34,13 +36,18 @@ public slots:
 
 private slots:
     void on_actionSave_triggered();
+    void on_playPauseButton_clicked();
+
+    void on_actionAbout_this_app_triggered();
+
+    void on_actionwater_mark_triggered();
 
 private:
     Ui::MainWindow *ui;
     QImage m_img;
-    bool ifExit, ifSave;
+    bool ifExit, ifSave, ifPaused, ifWaterMark;
     int height, width;
-    int numOfFrames;
+    int numOfFrames, frameSaveCounter;
 };
 
 #endif // MAINWINDOW_H
