@@ -1,48 +1,104 @@
-#ifndef DECODER_HPP
-#define DECODER_HPP
+#pragma once
 
 #include <string>
-#include "includeffmpeg.h"
 #include <QApplication>
 #include <QDebug>
+#include <QPainter>
+#include "includeffmpeg.h"
+#include "brightnessdialog.hpp"
+#include <QImage>
+#include <iostream>
+#include <QElapsedTimer>
+#include <QThread>
+#include <QMutex>
+#include <QWaitCondition>
+#include <QGuiApplication>
 
 using namespace std;
 
-class Decoder
+class Decoder : public QThread //previously it was QObject
 {
+    Q_OBJECT
+
 public:
     Decoder();
+    ~Decoder();
 
+    enum class GetFrame
+    {
+        Error,
+        Again,
+        Ok,
+    };
 
-    virtual bool openFile(const QString& videoInPut);
-    bool closeFile();
+    virtual bool decodeFile(const QString& videoInPut);
+    bool getPacket();
+    bool readFrame();
+    double getVideoDuration();
+    int getNumOfFrames();
+    GetFrame receiveFrame();
 
-    int getWidth();
+    void scrollVideo();
+    void setPausedPlay();
+    void setNewSliderValue(int sliderValue);
+    void run();
+    void stop();
+    void playerSleepThread();
+    QImage imgToRGB();
+    void loopPlayCond();
     int getHeight();
-    virtual AVFrame *GetNextFrame();
+    int getWidth();
+    int getFrameIterator();
+
+signals:
+    void mRgb(const QImage &qimg);
+    void positon(const int currPos);
+    void videoTimeCode(const double videoTime);
 
 private:
-    int mWidth;
-    int mHeight;
-    int videoStreamIndex;
-    double fps;
-    double ffmpegTimeBase;
-    bool isOpen;
+    static QString videoInPut;
+    QString frameOutPut;
+    QString msfLogo;
+    double desiredPos;
+    double userDesideredPos;
+    int numOfFrames;
 
-    AVCodec* mVideoCodec;
-    AVCodecContext* mVideoCodecCtx;
-    AVFormatContext* mFormatCtx;
-    struct SwsContext *mImgConvertCtx;
+    AVFormatContext *fmtCtx = nullptr;
+    AVCodecContext *codexCtx = nullptr;
+    AVCodec *codec = nullptr;
+    AVCodec *decoder = nullptr;
+    AVStream *stream = nullptr;
+    AVPacket *pkt = nullptr;
+    AVFrame *frame = nullptr;
+    struct SwsContext *swsCtx = nullptr;
 
-    AVFrame * GetRGBAFrame(AVFrame *mFrameYuv);
-    bool decodeVideo(const AVPacket *avpkt, AVFrame * mOutFrame);
+    qint64 startTime = 0;
+    qint64 numFrames = 0;
 
+    bool hasFrameAfterSeek = false;
+    bool canRead = true;
+    bool fluhed = false;
+    bool mStop = false;
+    bool mIfPaused = false;
+    int mNewSliderValue = -1;
+    bool mifUserSetNewValue = false;
 
-    bool openVideo();
-    void closeVideo();
+    double mVideoDuration = 0.0;
+    uint8_t *data = nullptr;
 
+//    QVector<QImage> qImg;
+    QImage qImg;
 
+    int mFrameIterator = 0;
+    int mHeight = 0, mWidth = 0;
 
+    BrightnessDialog brightDialog;
+
+    QElapsedTimer et;
+
+    QThread mThread;
+    QMutex mMutex;
+    QWaitCondition waitCond;
+
+    double mPrevTime = 0.0;
 };
-
-#endif // DECODER_HPP

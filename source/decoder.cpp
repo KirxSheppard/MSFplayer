@@ -1,449 +1,352 @@
 #include "decoder.hpp"
 
+#include <QtConcurrent/QtConcurrentRun>
+
 Decoder::Decoder()
 {
-    mFormatCtx = nullptr;
-    mVideoCodec = nullptr;
-    mVideoCodecCtx = nullptr;
-    mImgConvertCtx = nullptr;
-    videoStreamIndex = -1;
-    isOpen = false;
-    ffmpegTimeBase = 0.0;
-    fps = 0.0;
+    desiredPos = 13;
+    numOfFrames = 200;
+
+    startTime = 0;
+    numFrames = 0;
+    mFrameIterator = 0;
+
+    hasFrameAfterSeek = false;
 }
 
-bool Decoder::openFile(const QString &videoInPut)
+Decoder::~Decoder()
+{
+    av_frame_free(&frame); //cleaning
+}
+
+bool Decoder::getPacket()
+{
+    // Packet is invalid when it returns false
+    for (;;)
+    {
+        av_packet_unref(pkt);
+        const int ret = av_read_frame(fmtCtx, pkt);
+        if (ret < 0)
+        {
+            break;
+        }
+        if (pkt->stream_index == stream->index)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+Decoder::GetFrame Decoder::receiveFrame()
+{
+    int ret = 0;
+    if(!hasFrameAfterSeek)
+    {
+        ret = avcodec_receive_frame(codexCtx, frame);
+        Q_ASSERT(!frame->data[0] || frame->data[0]);
+        if(ret == AVERROR(EAGAIN))
+        {
+            return GetFrame::Again;
+        }
+    }
+    else hasFrameAfterSeek = false;
+    return (ret==0) ? GetFrame::Ok : GetFrame::Error;
+}
+
+void Decoder::scrollVideo()
+{
+    //new value set at the slider by the user
+    if(mifUserSetNewValue)
+    {
+        int64_t ts = stream->time_base.den * userDesideredPos / stream->time_base.num;
+        cerr << ts << endl;
+        if (av_seek_frame(fmtCtx, stream->index, ts, AVSEEK_FLAG_BACKWARD) >= 0)
+        {
+            avcodec_flush_buffers(codexCtx);
+        }
+    }
+    mifUserSetNewValue = false;
+}
+
+void Decoder::setPausedPlay()
 {
 
-    closeFile();
+    mIfPaused = !mIfPaused;
+    waitCond.wakeAll();
+}
 
-    //av_register_all();
-
-
-    if(avformat_open_input(&mFormatCtx, videoInPut.toUtf8().constData(), nullptr, nullptr) != 0)
+void Decoder::run()
+{
+    for(;;)
     {
-        closeFile();
-        return false;
-    }
-    if(avformat_find_stream_info(mFormatCtx, nullptr) < 0)
-    {
-        closeFile();
-        return false;
-    }
+        int err;
 
-    bool hasVideo = openVideo();
-
-    if(!hasVideo)
-    {
-        closeFile();
-        return false;
-    }
-
-    isOpen = true;
-
-
-    // Get file information.
-        if (videoStreamIndex != -1)
+        if (canRead)
         {
-            fps = av_q2d(mFormatCtx->streams[videoStreamIndex]->r_frame_rate);
+            err = av_read_frame(fmtCtx, pkt);
+            if (err != 0)
+            {
+                canRead = false;
+            }
 
-            // Need for convert time to ffmpeg time.
-            ffmpegTimeBase = av_q2d(mFormatCtx->streams[videoStreamIndex]->time_base);
+            if (pkt->stream_index != stream->index)
+            {
+                av_packet_unref(pkt);
+                continue;
+            }
+        }
+
+        if (!fluhed)
+        {
+            err = avcodec_send_packet(codexCtx, pkt);
+
+            if (pkt->data == nullptr && pkt->size == 0)
+                fluhed = true;
+
+            av_packet_unref(pkt);
+
+            if (err == AVERROR(EAGAIN))
+                continue;
+            else if (err != 0)
+                break;
         }
 
 
+        err = avcodec_receive_frame(codexCtx, frame);
+        if (err == AVERROR(EAGAIN))
+            continue;
+        else if (err != 0)
+            break;
 
-    return true;
+        const double currPos = av_q2d(stream->time_base) * frame->best_effort_timestamp;
+
+        if (currPos < desiredPos)
+           continue;
+
+
+        scrollVideo();
+
+
+        if (!swsCtx)
+        {
+            swsCtx = sws_getContext(
+                 frame->width,
+                 frame->height,
+                 (AVPixelFormat)frame->format,
+                 frame->width,
+                 frame->height,
+                 AV_PIX_FMT_BGRA,
+                 SWS_BILINEAR,
+                 nullptr,
+                 nullptr,
+                 nullptr
+             );
+        }
+
+        //log
+//        qDebug() << currPos
+//                 << av_get_picture_type_char(frame->pict_type)
+//                 << frame->key_frame;
+
+        imgToRGB();
+
+        emit videoTimeCode(currPos);
+        emit mRgb(qImg);
+
+        loopPlayCond();
+        emit positon(getFrameIterator()); //currPos if we want to display progress bar in the total video length
+
+        if(mIfPaused)
+        {
+            for(;;)
+            {
+                mMutex.lock();
+                waitCond.wait(&mMutex);
+                mMutex.unlock();
+                if(!mIfPaused || mStop) break;
+            }
+        }
+        playerSleepThread();
+        if(mStop) break;
+    }
 }
 
-bool Decoder::closeFile()
+void Decoder::stop()
 {
-    isOpen = false;
+    mStop = true;
+    waitCond.wakeAll();
+}
+
+void Decoder::playerSleepThread()
+{
+    double time = av_q2d(stream->time_base) * (frame->best_effort_timestamp);
+
+    if (et.isValid() && mPrevTime > 0.0)
+    {
+        double t = et.nsecsElapsed() / 1e9;
+
+        int sleepTime = (time - mPrevTime - t) * 1000;
+        qDebug()<<"st: "<< sleepTime;
+        if (sleepTime > 0)
+            QThread::msleep(sleepTime);
+    }
+    et.start();
+
+    mPrevTime = time;
+}
+
+//Uses sws_scale for conversion for current and previous frame used in onion skinning
+QImage Decoder::imgToRGB()
+{
+//        if (qImgs[i].format())
+        qImg = QImage(frame->width, frame->height, QImage::Format_ARGB32);
+
+        uint8_t *dstData[] {
+            qImg.bits()
+        };
+        int dstLinesize[] {
+            qImg.bytesPerLine()
+        };
+
+        sws_scale(
+             swsCtx,
+             frame->data,
+             frame->linesize,
+             0,
+             frame->height,
+             dstData,
+             dstLinesize
+         );
+    return qImg;
+}
 
 
 
-        // Close video
-        closeVideo();
+void Decoder::loopPlayCond()
+{
+    ++mFrameIterator;
+   if(mFrameIterator == numOfFrames)// break; //runs only the given number of frames
+   {
+       int64_t ts = stream->time_base.den * desiredPos / stream->time_base.num;
+       cerr << ts << endl;
+       if (av_seek_frame(fmtCtx, stream->index, ts, AVSEEK_FLAG_BACKWARD) >= 0)
+       {
+           avcodec_flush_buffers(codexCtx);
+       }
+       mFrameIterator=0;
+   }
+}
 
+bool Decoder::readFrame()
+{
+    if(receiveFrame() == GetFrame::Ok) return true;
 
-        if (mFormatCtx)
+    while((pkt->data != nullptr) || (getPacket()==true))
+    {
+        const int ret = avcodec_send_packet(codexCtx, pkt);
+        av_packet_unref(pkt); // Now the packet data is nullptr
 
+        if (ret == AVERROR(EAGAIN))
         {
-
-            avformat_close_input(&mFormatCtx);
-            mFormatCtx = nullptr;
-
+            continue;
         }
+
+        switch (receiveFrame())
+        {
+            case GetFrame::Again:
+                continue;
+            case GetFrame::Ok:
+                return true;
+            default:
+                break;
+        }
+
+        return false;
+    }
+
+    if ((avcodec_send_packet(codexCtx, nullptr)) == 0 && (receiveFrame() == GetFrame::Ok))
+    {
         return true;
+    }
+    return false;
+}
+
+double Decoder::getVideoDuration()
+{
+    //Returns total video duration in seconds
+    mVideoDuration =  1.0 * fmtCtx->duration / (AV_TIME_BASE * 1.0);
+    qDebug()<<"Video duration: "<< mVideoDuration; //no need for this in the future
+    return mVideoDuration;
+}
+
+int Decoder::getNumOfFrames()
+{
+    return numOfFrames;
+}
+
+bool Decoder::decodeFile(const QString &videoInPut)
+{
+    fmtCtx = avformat_alloc_context();
+
+    if(avformat_open_input(&fmtCtx, videoInPut.toUtf8().constData(), nullptr, nullptr) != 0) return false;
+
+    if(avformat_find_stream_info(fmtCtx, nullptr) < 0) return false;
+
+    const int streamIdx = av_find_best_stream(fmtCtx, AVMEDIA_TYPE_VIDEO, -1, -1, &decoder, 0);
+
+    if((decoder == nullptr) || (streamIdx < 0)) return 0;
+
+    stream = fmtCtx->streams[streamIdx];
+    if(!stream) return 0;
+
+    codexCtx = avcodec_alloc_context3(decoder);
+
+    if(avcodec_parameters_to_context(codexCtx, stream->codecpar) < 0 ) return 0;
+
+    //Default usage of threads but most optimal:
+    codexCtx->thread_count = QThread::idealThreadCount();
+    codexCtx->thread_type = FF_THREAD_FRAME;
+
+   if(avcodec_open2(codexCtx, codec, nullptr) < 0) return 0;
+
+   pkt = av_packet_alloc();
+   frame = av_frame_alloc();
+
+   int64_t ts = stream->time_base.den * desiredPos / stream->time_base.num;
+   cerr << ts << endl;
+   if (av_seek_frame(fmtCtx, stream->index, ts, AVSEEK_FLAG_BACKWARD) >= 0)
+   {
+       avcodec_flush_buffers(codexCtx);
+   }
+
+   start();
+   return true;
 }
 
 int Decoder::getWidth()
 {
+    if(codexCtx != nullptr)
+        mWidth = codexCtx->width;
     return mWidth;
+}
+
+int Decoder::getFrameIterator()
+{
+    return mFrameIterator;
+}
+
+void Decoder::setNewSliderValue(int sliderValue)
+{
+    mifUserSetNewValue = true;
+    userDesideredPos = desiredPos + ((numOfFrames * sliderValue / 100))/24;
+    mFrameIterator = sliderValue * numOfFrames / 100;
+//    qDebug()<<"new slidervalue: "<<sliderValue<<" usr dsr pos: "<<userDesideredPos;
 }
 
 int Decoder::getHeight()
 {
+    if(codexCtx != nullptr)
+        mHeight = codexCtx->height;
     return mHeight;
 }
-
-AVFrame *Decoder::GetNextFrame()
-{
-    AVFrame * res = nullptr;
-
-
-
-        if (videoStreamIndex != -1)
-
-        {
-
-            AVFrame *pVideoYuv = av_frame_alloc();
-
-            AVPacket packet;
-
-
-
-            if (isOpen)
-
-            {
-
-                // Read packet.
-
-                while (av_read_frame(mFormatCtx, &packet) >= 0)
-
-                {
-
-                    int64_t pts = 0;
-
-                    pts = (packet.dts != AV_NOPTS_VALUE) ? packet.dts : 0;
-
-
-
-                    if(packet.stream_index == videoStreamIndex)
-
-                    {
-
-                        // Convert ffmpeg frame timestamp to real frame number.
-
-                        int64_t numberFrame = (double)((int64_t)pts -
-
-                            mFormatCtx->streams[videoStreamIndex]->start_time) *
-
-                            ffmpegTimeBase * fps;
-
-
-
-                        // Decode frame
-
-                        bool isDecodeComplite = decodeVideo(&packet, pVideoYuv);
-
-                        if (isDecodeComplite)
-
-                        {
-
-                            res = GetRGBAFrame(pVideoYuv);
-
-                        }
-
-                        break;
-
-                    }
-
-                    av_free_packet(&packet);
-
-                    packet = AVPacket();
-
-                }
-
-
-
-                av_free(pVideoYuv);
-
-            }
-
-        }
-
-
-
-        return res;
-}
-
-AVFrame *Decoder::GetRGBAFrame(AVFrame *mFrameYuv)
-{
-    AVFrame * frame = nullptr;
-
-        int width  = mVideoCodecCtx->width;
-
-        int height = mVideoCodecCtx->height;
-
-        int bufferImgSize = avpicture_get_size(AV_PIX_FMT_BGR24, width, height);
-
-        frame = av_frame_alloc();
-
-        uint8_t * buffer = (uint8_t*)av_mallocz(bufferImgSize);
-
-        if (frame)
-
-        {
-
-            avpicture_fill((AVPicture*)frame, buffer, AV_PIX_FMT_BGR24, width, height);
-
-            frame->width  = width;
-
-            frame->height = height;
-
-            //frame->data[0] = buffer;
-
-
-
-            sws_scale(mImgConvertCtx, mFrameYuv->data, mFrameYuv->linesize,
-
-                0, height, frame->data, frame->linesize);
-
-        }
-
-
-
-        return (AVFrame *)frame;
-}
-
-bool Decoder::decodeVideo(const AVPacket *avpkt, AVFrame *mOutFrame)
-{
-    bool res = false;
-
-    if(mVideoCodecCtx)
-    {
-        if(avpkt && mOutFrame)
-        {
-            int gotPicPtr = 0;
-            int videoFrameBytes = avcodec_decode_video2(mVideoCodecCtx,mOutFrame, &gotPicPtr, avpkt);
-
-            res = (videoFrameBytes > 0);
-        }
-    }
-    return res;
-}
-
-bool Decoder::openVideo()
-{
-    bool res = false;
-
-    if(mFormatCtx)
-    {
-        videoStreamIndex = -1;
-
-        for (unsigned int i = 0; i < mFormatCtx->nb_streams; i++)
-
-                {
-
-                    if (mFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO)
-
-                    {
-
-                        videoStreamIndex = i;
-
-                        mVideoCodecCtx = mFormatCtx->streams[i]->codec;
-
-                        mVideoCodec = avcodec_find_decoder(mVideoCodecCtx->codec_id);
-
-
-
-                        if (mVideoCodec)
-
-                        {
-
-                            res     = !(avcodec_open2(mVideoCodecCtx, mVideoCodec, nullptr) < 0);
-
-                            mWidth   = mVideoCodecCtx->coded_width;
-
-                            mHeight  = mVideoCodecCtx->coded_height;
-
-                        }
-
-
-
-                        break;
-
-                    }
-
-                }
-        if(!res)
-        {
-            closeVideo();
-        }
-        else
-        {
-                mImgConvertCtx = sws_getContext(mVideoCodecCtx->width, mVideoCodecCtx->height, mVideoCodecCtx->pix_fmt,
-                                                mVideoCodecCtx->width, mVideoCodecCtx->height, AV_PIX_FMT_BGR24, SWS_BICUBIC, nullptr, nullptr, nullptr);
-        }
-
-    }
-    return res;
-}
-
-void Decoder::closeVideo()
-{
-    if (mVideoCodecCtx)
-
-        {
-
-            avcodec_close(mVideoCodecCtx);
-
-            mVideoCodecCtx = nullptr;
-
-            mVideoCodec = nullptr;
-
-            videoStreamIndex = 0;
-
-        }
-}
-
-
-
-/*
-bool BMPSave(const char *pFileName, AVFrame * frame, int w, int h)
-
-{
-
-    bool bResult = false;
-
-
-
-    if (frame)
-
-    {
-
-        FILE* file = fopen(pFileName, "wb");
-
-        if (file)
-
-        {
-
-            // RGB image
-
-            int imageSizeInBytes = 3 * w * h;
-
-            int headersSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
-
-            int fileSize = headersSize + imageSizeInBytes;
-
-
-
-            uint8_t * pData = new uint8_t[headersSize];
-
-
-
-            if (pData != NULL)
-
-            {
-
-                BITMAPFILEHEADER& bfHeader = *((BITMAPFILEHEADER *)(pData));
-
-
-
-
-                bfHeader.bfType = 0x4D42; // WORD('M' << 8) | 'B';
-
-                bfHeader.bfSize = fileSize;
-
-                bfHeader.bfOffBits = headersSize;
-
-                bfHeader.bfReserved1 = bfHeader.bfReserved2 = 0;
-
-
-
-                BITMAPINFOHEADER& bmiHeader = *((BITMAPINFOHEADER *)(pData + headersSize - sizeof(BITMAPINFOHEADER)));
-
-
-
-                bmiHeader.biBitCount = 3 * 8;
-
-                bmiHeader.biWidth    = w;
-
-                bmiHeader.biHeight   = h;
-
-                bmiHeader.biPlanes   = 1;
-
-                bmiHeader.biSize     = sizeof(bmiHeader);
-
-                bmiHeader.biCompression = BI_RGB;
-
-                bmiHeader.biClrImportant = bmiHeader.biClrUsed =
-
-                    bmiHeader.biSizeImage = bmiHeader.biXPelsPerMeter =
-
-                    bmiHeader.biYPelsPerMeter = 0;
-                fwrite(pData, headersSize, 1, file);
-
-                uint8_t *pBits = frame->data[0] + frame->linesize[0] * h - frame->linesize[0];
-                int nSpan = frame->linesize[0];
-
-                int numberOfBytesToWrite = 3 * w;
-
-                for (size_t i = 0; i < h; ++i, pBits -= nSpan)
-                {
-
-                    fwrite(pBits, numberOfBytesToWrite, 1, file);
-                }
-                bResult = true;
-
-                delete [] pData;
-            }
-            fclose(file);
-        }
-
-    }
-
-
-
-    return bResult;
-
-}
-*/
-
-
-
-
-/*
-//Decoder decoder;
-Decoder *decoder = new Decoder();
-
-if(decoder->openFile(videoInPut))
-{
-    width = decoder->getWidth();
-    height = decoder->getHeight();
-
-    for (int i = 0; i < 3; i++)
-
-        {
-
-          AVFrame * frame = decoder->GetNextFrame();
-
-          if (frame)
-
-          {
-
-            QString asd = frameOutPut + QString::number(i) + ".bmp";
-
-            if (!BMPSave(asd.toUtf8().constData(), frame, frame->width, frame->height))
-            {
-
-              qDebug() << "Cannot save file" << asd;
-
-            }
-
-            av_free(frame->data[0]);
-
-            av_free(frame);
-
-          }
-
-        }
-}
-
-
-
-
-
-*/
-

@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>960</width>
+    <height>540</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
@@ -22,8 +28,8 @@
       </property>
       <property name="sizeHint" stdset="0">
        <size>
-        <width>20</width>
-        <height>40</height>
+        <width>17</width>
+        <height>383</height>
        </size>
       </property>
      </spacer>
@@ -53,12 +59,22 @@
        </widget>
       </item>
       <item>
-       <widget class="QSlider" name="horizontalSlider">
+       <widget class="Slider" name="horizontalSlider">
+        <property name="mouseTracking">
+         <bool>false</bool>
+        </property>
         <property name="maximum">
          <number>100</number>
         </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="timelabel">
+        <property name="text">
+         <string>00:00</string>
         </property>
        </widget>
       </item>
@@ -68,6 +84,18 @@
      <widget class="QProgressBar" name="progressBar">
       <property name="enabled">
        <bool>true</bool>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>0</height>
+       </size>
       </property>
       <property name="styleSheet">
        <string notr="true">background-color: rgb(47, 127, 255);</string>
@@ -87,8 +115,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
-     <height>26</height>
+     <width>960</width>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -96,6 +124,7 @@
      <string>File</string>
     </property>
     <addaction name="actionSave"/>
+    <addaction name="separator"/>
     <addaction name="actionexit"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
@@ -119,22 +148,22 @@
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionSave">
    <property name="text">
-    <string>save frames</string>
+    <string>Save frames</string>
    </property>
   </action>
   <action name="actionexit">
    <property name="text">
-    <string>exit</string>
+    <string>Exit</string>
    </property>
   </action>
   <action name="actionbrightness">
    <property name="text">
-    <string>brightness</string>
+    <string>Color inspector</string>
    </property>
   </action>
   <action name="actiononion_skinning">
    <property name="text">
-    <string>onion skinning</string>
+    <string>Onion skinning</string>
    </property>
   </action>
   <action name="actionAbout_this_app">
@@ -144,10 +173,17 @@
   </action>
   <action name="actionwater_mark">
    <property name="text">
-    <string>water mark</string>
+    <string>Water mark</string>
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>Slider</class>
+   <extends>QSlider</extends>
+   <header>slider.hpp</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
