@@ -23,7 +23,7 @@ void BrightnessDialog::paintEvent(QPaintEvent *event)
     painter.fillRect(this->rect(),QColor::fromRgb(20, 20, 20, 255));
 
     //main background
-    QRadialGradient gradient(70, 70,300, 295, 20);
+    QRadialGradient gradient(70, 270,300, 700, 20);
         gradient.setColorAt(1, QColor::fromRgbF(0.15, 0.15, 0.15, 1));
         gradient.setColorAt(0, QColor::fromRgbF(0.3, 0.3, 0.3, 0.8));
         QBrush brush(gradient);
@@ -74,7 +74,6 @@ void BrightnessDialog::on_checkBox_2_clicked()
     mIfRed = !mIfRed;
     emit ifRedChannel(mIfRed);
 }
-
 
 //Green channel check box
 void BrightnessDialog::on_checkBox_3_clicked()

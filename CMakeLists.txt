@@ -45,15 +45,15 @@ find_package(Qt5 COMPONENTS Widgets Core REQUIRED)
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE
-    "C:/Users/Sheppard/Downloads/ffmpeg-4.1.3-win64-dev/ffmpeg-4.1.3-win64-dev/include"
+    "/usr/local/include"
     "source"
     "forms"
 )
 
 target_link_libraries(${PROJECT_NAME}
     Qt5::Widgets
-    "C:/Users/Sheppard/Downloads/ffmpeg-4.1.3-win64-dev/ffmpeg-4.1.3-win64-dev/lib/avcodec.lib"
-    "C:/Users/Sheppard/Downloads/ffmpeg-4.1.3-win64-dev/ffmpeg-4.1.3-win64-dev/lib/avutil.lib"
-    "C:/Users/Sheppard/Downloads/ffmpeg-4.1.3-win64-dev/ffmpeg-4.1.3-win64-dev/lib/avformat.lib"
-    "C:/Users/Sheppard/Downloads/ffmpeg-4.1.3-win64-dev/ffmpeg-4.1.3-win64-dev/lib/swscale.lib"
+    "/usr/local/lib/libavcodec.dylib"
+    "/usr/local/lib/libavutil.dylib"
+    "/usr/local/lib/libavformat.dylib"
+    "/usr/local/lib/libswscale.dylib"
 )

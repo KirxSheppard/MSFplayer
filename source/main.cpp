@@ -1,9 +1,7 @@
 #include "mainwindow.h"
 
-//const int numOfFrames = 200;
-//const int desiredPos = 40;
-const QString videoInPut = "E:/Episode 2.m4v"; //8-bit video, in the future i'll allow user to choose any file he wants
-const QString msfLogo  = "E:/ikona msf small.png";
+const QString videoInPut = "/Volumes/SANDISK/Episode 2.m4v"; //8-bit video, in the future i'll allow user to choose any file he wants
+const QString msfLogo  = "/Volumes/SANDISK/ikona msf small.png";
 
 QString fileName()
 {
@@ -20,6 +18,7 @@ int main(int argc, char *argv[])
    });
 
    QApplication a(argc, argv);
+   a.setStyle("Fusion");
 
    MainWindow w(fileName(), videoInPut, msfLogo);
    w.setWindowTitle("MSF FFmpeg player");

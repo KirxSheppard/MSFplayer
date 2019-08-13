@@ -224,7 +224,7 @@
        </property>
       </widget>
      </item>
-     <item>
+     <item alignment="Qt::AlignVCenter">
       <widget class="QLabel" name="label_9">
        <property name="text">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot;  color:#FFFFFF;&quot;&gt;Blue intensity&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>

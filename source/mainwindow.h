@@ -8,8 +8,10 @@
 #include "slider.hpp"
 #include "decoder.hpp"
 #include "brightnessdialog.hpp"
+#include "saveframesdialog.hpp"
 #include <QtConcurrent/QtConcurrentRun>
 #include <QtMath>
+#include <QElapsedTimer>
 
 namespace Ui {
 class MainWindow;
@@ -32,11 +34,12 @@ public:
 
     void videoPlayer();
     void videoFrameLoop();
-    void paintEvent(QPaintEvent *event);
-    void resizeEvent(QResizeEvent *event);
-    void closeEvent(QCloseEvent *event);
+    void paintEvent(QPaintEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void closeEvent(QCloseEvent *event) override;
     void adjustColor(int initPos, int step, int value);
-    void rgb2Hsv(int type, int value);
+    void rgb2Hsv(int type, int valueToAdd);
 
     //Slots
     void setVideoTimeCode(double videoTime);
@@ -75,12 +78,13 @@ private slots:
 private:
     Ui::MainWindow *ui;
     BrightnessDialog brightnessDialog;
+
     Slider slider;
     QList<QImage> m_imgs;
     QString mVideoInPutPath, mMsfLogoPath, mFileNameWithFormat, mFileOutPut, mFileName;
-    bool ifExit, ifSave, ifPaused, ifWaterMark, ifBrightOpt, ifNewSlierValue, ifOnionSkinning, ifRedOpt, ifGreenOpt, ifBlueOpt;
+    bool ifExit, ifSave, ifPaused, ifWaterMark, ifBrightOpt, ifNewSlierValue, ifOnionSkinning, ifRedOpt, ifGreenOpt, ifBlueOpt, ifOnScreenPressed;
     int height, width;
-    int numOfFrames, frameSaveCounter;
+    int mNumOfFrames, mNumOfExportFrames, mFrameSaveCounter;
     Decoder decoder;
     int mVidBright = 0; //how much to brighten an image
     int mVidRed = 0;
@@ -95,8 +99,8 @@ private:
     bool sliderPressed = false;
 //    bool canSetValue = true;
 
-    double red, green, blue;
-    double hue, saturation, value;
+    QRect onScreenPlayPause;
+    QElapsedTimer timer;
 };
 
 #endif // MAINWINDOW_H

@@ -145,9 +145,9 @@ void Decoder::run()
         }
 
         //log
-//        qDebug() << currPos
-//                 << av_get_picture_type_char(frame->pict_type)
-//                 << frame->key_frame;
+        qDebug() << currPos
+                 << av_get_picture_type_char(frame->pict_type)
+                 << frame->key_frame;
 
         imgToRGB();
 
@@ -156,7 +156,6 @@ void Decoder::run()
 
         loopPlayCond();
         emit positon(getFrameIterator()); //currPos if we want to display progress bar in the total video length
-
         if(mIfPaused)
         {
             for(;;)
@@ -187,7 +186,7 @@ void Decoder::playerSleepThread()
         double t = et.nsecsElapsed() / 1e9;
 
         int sleepTime = (time - mPrevTime - t) * 1000;
-        qDebug()<<"st: "<< sleepTime;
+//        qDebug()<<"st: "<< sleepTime;
         if (sleepTime > 0)
             QThread::msleep(sleepTime);
     }
@@ -220,8 +219,6 @@ QImage Decoder::imgToRGB()
          );
     return qImg;
 }
-
-
 
 void Decoder::loopPlayCond()
 {
@@ -290,7 +287,6 @@ bool Decoder::decodeFile(const QString &videoInPut)
     fmtCtx = avformat_alloc_context();
 
     if(avformat_open_input(&fmtCtx, videoInPut.toUtf8().constData(), nullptr, nullptr) != 0) return false;
-
     if(avformat_find_stream_info(fmtCtx, nullptr) < 0) return false;
 
     const int streamIdx = av_find_best_stream(fmtCtx, AVMEDIA_TYPE_VIDEO, -1, -1, &decoder, 0);
