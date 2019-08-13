@@ -76,6 +76,7 @@ private:
     bool mIfRed = false;
     bool mIfGreen = false;
     bool mIfBlue = false;
+    QString mFileWithFormat;
 
 };
 

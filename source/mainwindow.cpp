@@ -7,14 +7,14 @@
 #include <QVector4D>
 #include <QVector3D>
 
-MainWindow::MainWindow(const QString fileName, const QString videoInPut, const QString msfLogo, QWidget *parent) :
+MainWindow::MainWindow(const QString msfLogo, QWidget *parent) :
     QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
 
     ui->setupUi(this);
     ui->statusbar->setStyleSheet("color: white");
-    ui->statusbar->showMessage(fileName);
+    ui->statusbar->showMessage(mFileNameWithFormat);
     ui->statusbar->addPermanentWidget(ui->progressBar);
     QString progressLook = "QProgressBar::chunk {background: QLinearGradient(x1: 0, y1: 0, x2: 0.5, y2: 0,stop: 0 #78d,stop: 0.2999 #46a,stop: 0.5 #45a,stop: 1 #006a80 );"
                   "border-bottom-right-radius: 0px;"
@@ -42,13 +42,12 @@ MainWindow::MainWindow(const QString fileName, const QString videoInPut, const Q
     ifOnionSkinning =false;
     ifOnScreenPressed = false;
 
-    mNumOfFrames = decoder.getNumOfFrames();
     mFrameSaveCounter = 0;
-    mVideoInPutPath = videoInPut;
     mMsfLogoPath = msfLogo;
-    mFileNameWithFormat = fileName;
+//    mFileNameWithFormat = fileName;
 
-    mFileName = fileName.left(fileName.indexOf("."));
+//    mFileName = fileName.left(fileName.indexOf("."));
+
 
 
 //    qRegisterMetaType<QVector<QImage>>();
@@ -97,7 +96,6 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
     if (m_imgs.size() != 2)
         return;
-
 
     QPainter painter(this);
     painter.setRenderHint(QPainter::SmoothPixmapTransform);
@@ -166,13 +164,64 @@ void MainWindow::setImage(const QImage &img)
         adjustColor(0, 4, mVidBlue);
     }
 
+//    //Just to test it first
+//    if(checkWaterMark() == true)
+//    {
+//        QImage waterMark(mMsfLogoPath);
+//        int logoLineSize = waterMark.bytesPerLine();
+//        uint8_t *srcLogo = waterMark.bits();
+
+//        uint8_t *data = m_imgs[1].bits();
+//        int w4 = m_imgs[1].width() * 4;
+//        int h = m_imgs[1].height();
+//        int ls = m_imgs[1].bytesPerLine();
+
+//        const int nTasks = QThread::idealThreadCount();
+
+//        auto task = [&](int i) {
+//            const int begin = (i + 0) * h / nTasks;
+//            const int end   = (i + 1) * h / nTasks;
+
+////            int yLogo = 0;
+//            for (int y = begin, yLogo = 0; y < end; y += 1)
+//            {
+//                if(y > h / 2) ++yLogo;
+
+//                for (int x = 0, xLogo = 0; x < w4; x += 1)
+//                {
+//                    if(x > w4 / 2) ++xLogo;
+
+//                    if(xLogo < logoWidth && yLogo < logoHeight)
+//                    {
+//                        double p3a = srcLogo[yLogo * logoLineSize + xLogo * 4 + 3] / 255.0;
+//                        double p3 = srcLogo[yLogo * logoLineSize + xLogo * 4] / 255.0;
+//                        data[y * ls + x] = (p3a * data[y * ls + x] + (1.0 - p3a) * data[y * ls + x]);
+//                    }
+//                    data[y * ls + x] = clamp((int)data[y * ls + x], 0, 255);
+//                }
+//            }
+//        };
+
+//        QVector<QFuture<void>> thrs(nTasks - 1);
+
+//        for (int i = 0; i < thrs.size(); ++i)
+//            thrs[i] = QtConcurrent::run(task, i);
+//        task(thrs.size());
+
+//        for (auto &&t : thrs)
+//            t.waitForFinished();
+
+
+
+//    }
+    update();
+
     if (checkifSave())
     {
         int pos = mFileOutPut.lastIndexOf(".");
         QString temp = mFileOutPut;
         m_imgs[1].save(QString(temp.insert(pos,"_%1")).arg(mFrameSaveCounter, 6, 10, QLatin1Char('0')));
     }
-    update();
 }
 
 void MainWindow::setBrightState(bool brightState)
@@ -260,8 +309,34 @@ bool MainWindow::checkIfNewSliderValue()
     return ifNewSlierValue;
 }
 
+bool MainWindow::checkIfInitAborded()
+{
+    return initAborted;
+}
+
+void MainWindow::importVideo()
+{
+
+    initDialog.setWindowTitle("Import video");
+    initDialog.show();
+
+    if (initDialog.exec() == QDialog::Rejected)
+    {
+        initAborted = true;
+        return;
+    }
+    qDebug()<<"i am here";
+    videoPlayer();
+}
+
 void MainWindow::videoPlayer()
 {
+    mVideoInPutPath = initDialog.getInputFileName();
+    cutFileNameWithFormat();
+    mFileName = mFileNameWithFormat.left(mFileNameWithFormat.indexOf("."));
+    mNumOfFrames = initDialog.numOfFrames();
+    decoder.setVidInitPos(initDialog.initTimeCode());
+    decoder.setNumOfFrames(initDialog.numOfFrames());
     decoder.decodeFile(mVideoInPutPath);
 }
 
@@ -272,7 +347,6 @@ void MainWindow::resizeEvent(QResizeEvent *event)
 
 void MainWindow::mousePressEvent(QMouseEvent *event)
 {
-//    MainWindow::mouseReleaseEvent(event);
     if(onScreenPlayPause.contains(event->pos()))
     {
         ifPaused = !ifPaused;
@@ -339,7 +413,6 @@ void MainWindow::on_actionbrightness_triggered()
 {
 //    brightOpt = new BrightnessDialog(this);
     brightnessDialog.setWindowTitle("Color inspector");
-//    brightnessDialog.setFixedSize(300,280);
     brightnessDialog.show();
 }
 
@@ -447,7 +520,6 @@ void MainWindow::rgb2Hsv(int type, int valueToAdd)
                 data[y * ls + b] = std::clamp(rgb.z() * 255.0f, 0.0f, 255.0f);
                 data[y * ls + g] = std::clamp(rgb.y() * 255.0f, 0.0f, 255.0f);
                 data[y * ls + r] = std::clamp(rgb.x() * 255.0f, 0.0f, 255.0f);
-
 
 #else
                 float min = std::min({red, green, blue});
@@ -569,6 +641,13 @@ void MainWindow::rgb2Hsv(int type, int valueToAdd)
     for (auto &&t : thrs)
         t.waitForFinished();
     qDebug()<<et.nsecsElapsed() / 1e6 << "ms";
+}
+
+void MainWindow::cutFileNameWithFormat()
+{
+    //Gets the video file name
+    int pos = mVideoInPutPath.length() - mVideoInPutPath.lastIndexOf('/') - 1;
+    mFileNameWithFormat = mVideoInPutPath.right(pos);
 }
 
 void MainWindow::setVideoTimeCode(double videoTime)

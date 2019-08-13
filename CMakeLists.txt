@@ -28,8 +28,8 @@ endif()
 ###############################################################################
 file(GLOB PROJECT_FILES
     "source/*.cpp"
-    "source/*.hpp"
-    "source/*.h"
+    "header/*.hpp"
+    "header/*.h"
     "source/*.ui"
     "source/*.qrc"
 )
@@ -47,6 +47,7 @@ target_include_directories(${PROJECT_NAME}
     PRIVATE
     "/usr/local/include"
     "source"
+    "header"
     "forms"
 )
 

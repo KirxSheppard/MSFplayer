@@ -9,6 +9,7 @@
 #include "decoder.hpp"
 #include "brightnessdialog.hpp"
 #include "saveframesdialog.hpp"
+#include "initialdialog.h"
 #include <QtConcurrent/QtConcurrentRun>
 #include <QtMath>
 #include <QElapsedTimer>
@@ -22,7 +23,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(const QString fileName, const QString videoInPut, const QString msfLogo, QWidget *parent = nullptr);
+    MainWindow(const QString msfLogo, QWidget *parent = nullptr);
     ~MainWindow();
 
     int setFrame();
@@ -31,7 +32,9 @@ public:
     bool checkWaterMark();
     bool checkIfBrightness();
     bool checkIfNewSliderValue();
+    bool checkIfInitAborded();
 
+    void importVideo();
     void videoPlayer();
     void videoFrameLoop();
     void paintEvent(QPaintEvent *event) override;
@@ -40,6 +43,7 @@ public:
     void closeEvent(QCloseEvent *event) override;
     void adjustColor(int initPos, int step, int value);
     void rgb2Hsv(int type, int valueToAdd);
+    void cutFileNameWithFormat();
 
     //Slots
     void setVideoTimeCode(double videoTime);
@@ -78,6 +82,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     BrightnessDialog brightnessDialog;
+    InitialDialog initDialog;
 
     Slider slider;
     QList<QImage> m_imgs;
@@ -97,7 +102,8 @@ private:
     QString mVideoCurrPos = "00:00";
 
     bool sliderPressed = false;
-//    bool canSetValue = true;
+    bool initWindowWasUsed = false;
+    bool initAborted = false;
 
     QRect onScreenPlayPause;
     QElapsedTimer timer;

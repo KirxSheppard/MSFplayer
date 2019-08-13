@@ -39,6 +39,8 @@ public:
     GetFrame receiveFrame();
 
     void scrollVideo();
+    void setVidInitPos(double tcode);
+    void setNumOfFrames(int num);
     void setPausedPlay();
     void setNewSliderValue(int sliderValue);
     void run();

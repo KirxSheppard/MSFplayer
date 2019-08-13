@@ -4,8 +4,8 @@
 
 Decoder::Decoder()
 {
-    desiredPos = 13;
-    numOfFrames = 200;
+//    desiredPos = 13;
+//    numOfFrames = 200;
 
     startTime = 0;
     numFrames = 0;
@@ -16,7 +16,7 @@ Decoder::Decoder()
 
 Decoder::~Decoder()
 {
-    av_frame_free(&frame); //cleaning
+//    av_frame_free(&frame); //cleaning but here it's lags entire program
 }
 
 bool Decoder::getPacket()
@@ -67,6 +67,16 @@ void Decoder::scrollVideo()
         }
     }
     mifUserSetNewValue = false;
+}
+
+void Decoder::setVidInitPos(double tcode)
+{
+    desiredPos = tcode;
+}
+
+void Decoder::setNumOfFrames(int num)
+{
+    numOfFrames = num;
 }
 
 void Decoder::setPausedPlay()
