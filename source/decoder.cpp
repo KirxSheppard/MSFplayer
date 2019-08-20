@@ -4,9 +4,6 @@
 
 Decoder::Decoder()
 {
-//    desiredPos = 13;
-//    numOfFrames = 200;
-
     startTime = 0;
     numFrames = 0;
     mFrameIterator = 0;
@@ -16,7 +13,7 @@ Decoder::Decoder()
 
 Decoder::~Decoder()
 {
-//    av_frame_free(&frame); //cleaning but here it's lags entire program
+//    av_frame_free(&frame); //cleaning but here it's lags entire program on exit
 }
 
 bool Decoder::getPacket()
@@ -54,6 +51,14 @@ Decoder::GetFrame Decoder::receiveFrame()
     return (ret==0) ? GetFrame::Ok : GetFrame::Error;
 }
 
+int Decoder::setDefaultFramNum()
+{
+
+    numOfFrames = getVideoDuration() * getVideoFps() - getVideoFps() * desiredPos;
+//       qDebug()<<"numOffra "<<numOfFrames<<" end";
+    return numOfFrames;
+}
+
 void Decoder::scrollVideo()
 {
     //new value set at the slider by the user
@@ -65,6 +70,7 @@ void Decoder::scrollVideo()
         {
             avcodec_flush_buffers(codexCtx);
         }
+//        desiredPos = userDesideredPos;
     }
     mifUserSetNewValue = false;
 }
@@ -81,15 +87,17 @@ void Decoder::setNumOfFrames(int num)
 
 void Decoder::setPausedPlay()
 {
-
     mIfPaused = !mIfPaused;
-    waitCond.wakeAll();
+//    waitCond.wakeAll();
 }
 
 void Decoder::run()
 {
     for(;;)
     {
+
+
+
         int err;
 
         if (canRead)
@@ -122,6 +130,7 @@ void Decoder::run()
                 break;
         }
 
+        scrollVideo();
 
         err = avcodec_receive_frame(codexCtx, frame);
         if (err == AVERROR(EAGAIN))
@@ -131,11 +140,9 @@ void Decoder::run()
 
         const double currPos = av_q2d(stream->time_base) * frame->best_effort_timestamp;
 
+
         if (currPos < desiredPos)
            continue;
-
-
-        scrollVideo();
 
 
         if (!swsCtx)
@@ -170,9 +177,10 @@ void Decoder::run()
         {
             for(;;)
             {
-                mMutex.lock();
-                waitCond.wait(&mMutex);
-                mMutex.unlock();
+//                mMutex.lock();
+//                waitCond.wait(&mMutex);
+//                mMutex.unlock();
+                sleep(1);
                 if(!mIfPaused || mStop) break;
             }
         }
@@ -184,7 +192,7 @@ void Decoder::run()
 void Decoder::stop()
 {
     mStop = true;
-    waitCond.wakeAll();
+//    waitCond.wakeAll();
 }
 
 void Decoder::playerSleepThread()
@@ -205,7 +213,7 @@ void Decoder::playerSleepThread()
     mPrevTime = time;
 }
 
-//Uses sws_scale for conversion for current and previous frame used in onion skinning
+//Uses sws_scale for conversion for current frame
 QImage Decoder::imgToRGB()
 {
 //        if (qImgs[i].format())
@@ -233,15 +241,18 @@ QImage Decoder::imgToRGB()
 void Decoder::loopPlayCond()
 {
     ++mFrameIterator;
+//    qDebug()<<"mFrame"<<mFrameIterator<<"numof"<<numOfFrames;
    if(mFrameIterator == numOfFrames)// break; //runs only the given number of frames
    {
-       int64_t ts = stream->time_base.den * desiredPos / stream->time_base.num;
+//       int64_t ts = stream->time_base.den * desiredPos / stream->time_base.num; //old
+//       qDebug()<<ts;
+       int64_t ts = av_q2d(stream->avg_frame_rate) * desiredPos;
        cerr << ts << endl;
        if (av_seek_frame(fmtCtx, stream->index, ts, AVSEEK_FLAG_BACKWARD) >= 0)
        {
            avcodec_flush_buffers(codexCtx);
        }
-       mFrameIterator=0;
+       mFrameIterator = 0;
    }
 }
 
@@ -268,7 +279,6 @@ bool Decoder::readFrame()
             default:
                 break;
         }
-
         return false;
     }
 
@@ -283,7 +293,7 @@ double Decoder::getVideoDuration()
 {
     //Returns total video duration in seconds
     mVideoDuration =  1.0 * fmtCtx->duration / (AV_TIME_BASE * 1.0);
-    qDebug()<<"Video duration: "<< mVideoDuration; //no need for this in the future
+//    qDebug()<<"Video duration: "<< mVideoDuration; //no need for this in the future
     return mVideoDuration;
 }
 
@@ -319,14 +329,14 @@ bool Decoder::decodeFile(const QString &videoInPut)
    pkt = av_packet_alloc();
    frame = av_frame_alloc();
 
-   int64_t ts = stream->time_base.den * desiredPos / stream->time_base.num;
+   int64_t ts = stream->time_base.den * (mifUserSetNewValue ? userDesideredPos : desiredPos) / stream->time_base.num; //choose default or new slider
    cerr << ts << endl;
    if (av_seek_frame(fmtCtx, stream->index, ts, AVSEEK_FLAG_BACKWARD) >= 0)
    {
        avcodec_flush_buffers(codexCtx);
    }
 
-   start();
+//   start();
    return true;
 }
 
@@ -339,15 +349,20 @@ int Decoder::getWidth()
 
 int Decoder::getFrameIterator()
 {
+
     return mFrameIterator;
+}
+
+double Decoder::getVideoFps()
+{
+    return av_q2d(stream->avg_frame_rate);
 }
 
 void Decoder::setNewSliderValue(int sliderValue)
 {
     mifUserSetNewValue = true;
-    userDesideredPos = desiredPos + ((numOfFrames * sliderValue / 100))/24;
-    mFrameIterator = sliderValue * numOfFrames / 100;
-//    qDebug()<<"new slidervalue: "<<sliderValue<<" usr dsr pos: "<<userDesideredPos;
+    userDesideredPos = desiredPos + ((numOfFrames * sliderValue / 1000)) / getVideoFps();
+    mFrameIterator = sliderValue * numOfFrames / 1000;
 }
 
 int Decoder::getHeight()

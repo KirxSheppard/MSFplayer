@@ -44,11 +44,6 @@ MainWindow::MainWindow(const QString msfLogo, QWidget *parent) :
 
     mFrameSaveCounter = 0;
     mMsfLogoPath = msfLogo;
-//    mFileNameWithFormat = fileName;
-
-//    mFileName = fileName.left(fileName.indexOf("."));
-
-
 
 //    qRegisterMetaType<QVector<QImage>>();
 
@@ -74,13 +69,6 @@ MainWindow::MainWindow(const QString msfLogo, QWidget *parent) :
             this, &MainWindow::setBlueChannel);
     connect(&decoder, &Decoder::videoTimeCode,
             this, &MainWindow::setVideoTimeCode);
-//    QVector<int> a;
-//    a.resize(1093294432);
-
-//    QVector<int> b = a;
-
-//    int *d = b.data();
-//    d[];
 }
 
 MainWindow::~MainWindow()
@@ -92,7 +80,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::paintEvent(QPaintEvent *event)
 {
-    ui->statusbar->showMessage(mFileNameWithFormat);
+    ui->statusbar->showMessage(mFileNameWithFormat + " (" + QString::number(decoder.getVideoFps()) + "fps)");
 
     if (m_imgs.size() != 2)
         return;
@@ -103,6 +91,8 @@ void MainWindow::paintEvent(QPaintEvent *event)
     const QSize imgS =  m_imgs[1].size();
     QSize s = imgS.scaled(size(), Qt::KeepAspectRatio);
 
+    //Keeps main window aspect ratio along with the displayed video
+    this->resize(s.width(),s.height());
 
     //On screen rect for play/pause button
     onScreenPlayPause = QRect(s.width() / 4,
@@ -112,14 +102,12 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
 
     painter.drawImage(QRect(QPoint(), s), m_imgs[1]);
-//    painter.drawRect(onScreenPlayPause);
-
 
     //Additional play/pause button on video screen
     if(ifOnScreenPressed)
     {
         double t = timer.nsecsElapsed() / 1e9;
-//        qDebug()<<"timer: "<< t;
+//        qDebug()<<"timer: "<< t; //additional icon on screen
         if(t >= 4.0)
         {
               ifOnScreenPressed = false;
@@ -210,10 +198,8 @@ void MainWindow::setImage(const QImage &img)
 
 //        for (auto &&t : thrs)
 //            t.waitForFinished();
-
-
-
 //    }
+
     update();
 
     if (checkifSave())
@@ -263,7 +249,7 @@ void MainWindow::setSliderValue(int valueS)
 {
     if(!sliderPressed)
     {
-        valueS = 100 / (double) mNumOfFrames * valueS;
+        valueS = 1000 / (double) mNumOfFrames * valueS;
         ui->horizontalSlider->setValue(valueS);
     }
 }
@@ -277,6 +263,7 @@ bool MainWindow::checkifSave()
     mFrameSaveCounter++;
     int temp = ((double) mFrameSaveCounter / mNumOfExportFrames) * 100;
     ui->progressBar->setValue(temp);
+    update();
 
     if(mFrameSaveCounter == mNumOfExportFrames)
     {
@@ -325,7 +312,6 @@ void MainWindow::importVideo()
         initAborted = true;
         return;
     }
-    qDebug()<<"i am here";
     videoPlayer();
 }
 
@@ -334,10 +320,17 @@ void MainWindow::videoPlayer()
     mVideoInPutPath = initDialog.getInputFileName();
     cutFileNameWithFormat();
     mFileName = mFileNameWithFormat.left(mFileNameWithFormat.indexOf("."));
-    mNumOfFrames = initDialog.numOfFrames();
+    mNumOfFrames = initDialog.numOfFrames(); //does it just once
     decoder.setVidInitPos(initDialog.initTimeCode());
-    decoder.setNumOfFrames(initDialog.numOfFrames());
     decoder.decodeFile(mVideoInPutPath);
+    if(mNumOfFrames == 0)
+    {
+//        qDebug()<<initDialog.initTimeCode()<<"  "<<decoder.getVideoFps();
+        mNumOfFrames = decoder.setDefaultFramNum();
+    }
+    else
+        decoder.setNumOfFrames(mNumOfFrames);
+    decoder.start();
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)

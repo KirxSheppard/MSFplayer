@@ -19,9 +19,9 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 # Prevent "Default" builds
-if(NOT CMAKE_BUILD_TYPE)
-    message(FATAL_ERROR "Please choose build type")
-endif()
+#if(NOT CMAKE_BUILD_TYPE)
+#    message(FATAL_ERROR "Please choose build type")
+#endif()
 
 ###############################################################################
 # FILES

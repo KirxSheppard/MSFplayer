@@ -89,7 +89,8 @@ private:
     QString mVideoInPutPath, mMsfLogoPath, mFileNameWithFormat, mFileOutPut, mFileName;
     bool ifExit, ifSave, ifPaused, ifWaterMark, ifBrightOpt, ifNewSlierValue, ifOnionSkinning, ifRedOpt, ifGreenOpt, ifBlueOpt, ifOnScreenPressed;
     int height, width;
-    int mNumOfFrames, mNumOfExportFrames, mFrameSaveCounter;
+    int mNumOfFrames = -1;
+    int mNumOfExportFrames, mFrameSaveCounter;
     Decoder decoder;
     int mVidBright = 0; //how much to brighten an image
     int mVidRed = 0;

@@ -38,6 +38,7 @@ public:
     int getNumOfFrames();
     GetFrame receiveFrame();
 
+    int setDefaultFramNum();
     void scrollVideo();
     void setVidInitPos(double tcode);
     void setNumOfFrames(int num);
@@ -51,6 +52,7 @@ public:
     int getHeight();
     int getWidth();
     int getFrameIterator();
+    double getVideoFps();
 
 signals:
     void mRgb(const QImage &qimg);
@@ -62,7 +64,7 @@ private:
     QString frameOutPut;
     QString msfLogo;
     double desiredPos;
-    double userDesideredPos;
+    double userDesideredPos = 0.0;
     int numOfFrames;
 
     AVFormatContext *fmtCtx = nullptr;
@@ -81,9 +83,9 @@ private:
     bool canRead = true;
     bool fluhed = false;
     bool mStop = false;
+    bool mifUserSetNewValue = false;
     bool mIfPaused = false;
     int mNewSliderValue = -1;
-    bool mifUserSetNewValue = false;
 
     double mVideoDuration = 0.0;
     uint8_t *data = nullptr;

@@ -8,7 +8,12 @@ InitialDialog::InitialDialog(QWidget *parent) :
 {
     setAcceptDrops(true);
     ui->setupUi(this);
+    ui->widgetFrames->hide(); //temp
+    ui->widgetTimeCode->hide();
     ui->spinBoxFrames->setRange(0,500);
+    ui->pushButton_advanced->setStyleSheet("background-color: transparent; border: none;");
+    ui->widgetAdvanced->setStyleSheet("font: italic;");
+    resize(400,100);
 }
 
 InitialDialog::~InitialDialog()
@@ -51,8 +56,6 @@ QString InitialDialog::getInputFileName() const
 void InitialDialog::on_pushButton_pressed() //do dopisania
 {
     QString fileName = QFileDialog::getOpenFileName(this, "Open file");
-
-    //temp
     ui->lineEditVideoPath->setText(fileName);
 }
 
@@ -71,4 +74,21 @@ void InitialDialog::on_buttonBox_accepted()
 void InitialDialog::on_buttonBox_rejected()
 {
     QDialog::rejected();
+}
+
+void InitialDialog::on_pushButton_advanced_pressed()
+{
+    mIfAdvanced = !mIfAdvanced;
+    if(mIfAdvanced)
+    {
+        ui->widgetFrames->show();
+        ui->widgetTimeCode->show();
+    }
+    else
+    {
+        ui->widgetFrames->hide();
+        ui->widgetTimeCode->hide();
+        resize(400,100);
+    }
+    ui->pushButton_advanced->setText(mIfAdvanced ? "- Advanced settings" : "+ Advanced settings");
 }

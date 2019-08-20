@@ -33,7 +33,11 @@ private slots:
 
     void on_buttonBox_rejected();
 
+    void on_pushButton_advanced_pressed();
+
+
 private:
+    bool mIfAdvanced = false;
     Ui::InitialDialog *ui;
 };
 
