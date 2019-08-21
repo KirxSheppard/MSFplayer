@@ -86,6 +86,7 @@ private:
 
     Slider slider;
     QList<QImage> m_imgs;
+    QList<QImage> m_imgsBuff;
     QString mVideoInPutPath, mMsfLogoPath, mFileNameWithFormat, mFileOutPut, mFileName;
     bool ifExit, ifSave, ifPaused, ifWaterMark, ifBrightOpt, ifNewSlierValue, ifOnionSkinning, ifRedOpt, ifGreenOpt, ifBlueOpt, ifOnScreenPressed;
     int height, width;

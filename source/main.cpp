@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
    if(w.checkIfInitAborded())
    {
        qDebug()<<"here";
-       a.exec(); //even this doesn't work
+//       a.exec(); //even this doesn't work
 //       w.close();
 //       QApplication::quit();
 //       qApp->exit();

@@ -73,17 +73,23 @@ MainWindow::MainWindow(const QString msfLogo, QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    decoder.stop();
-    decoder.wait();
-    delete ui;
+//    decoder.stop();
+//    decoder.wait();
+    if(ui)
+    {
+        delete ui;
+    }
 }
 
 void MainWindow::paintEvent(QPaintEvent *event)
 {
     ui->statusbar->showMessage(mFileNameWithFormat + " (" + QString::number(decoder.getVideoFps()) + "fps)");
 
-    if (m_imgs.size() != 2)
-        return;
+
+//    //new list for buffor
+//    if(m_imgsBuff.size() != 40) return;
+
+    if (m_imgs.size() != 2) return;
 
     QPainter painter(this);
     painter.setRenderHint(QPainter::SmoothPixmapTransform);
@@ -130,9 +136,36 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
 void MainWindow::setImage(const QImage &img)
 {
+    bool mChangeBuff = false;
+    //previous usage with only two items (current and prev)
     if (m_imgs.size() >= 2)
         m_imgs.removeFirst();
     m_imgs.push_back(img);
+
+//    //new list as a buffor, it is important to display multiplication of 50 just for now
+
+//    if (!mChangeBuff)
+//    {
+//        if(m_imgs.size() >= 50)
+//        {
+//            mChangeBuff = true;
+
+//        }
+//        m_imgs.push_back(img);
+//    }
+
+//    if(mChangeBuff)
+//    {
+//        if(m_imgsBuff.size() >= 50)
+//        {
+
+//        }
+//        m_imgsBuff.push_back(img);
+//    }
+
+
+
+
 
     if(checkIfBrightness())
     {
@@ -247,11 +280,7 @@ void MainWindow::setBlueChannelState(bool blueState)
 
 void MainWindow::setSliderValue(int valueS)
 {
-    if(!sliderPressed)
-    {
-        valueS = 1000 / (double) mNumOfFrames * valueS;
-        ui->horizontalSlider->setValue(valueS);
-    }
+    if(!sliderPressed) ui->horizontalSlider->setValue(valueS);
 }
 
 bool MainWindow::checkifSave()
@@ -310,6 +339,7 @@ void MainWindow::importVideo()
     if (initDialog.exec() == QDialog::Rejected)
     {
         initAborted = true;
+        this->deleteLater();
         return;
     }
     videoPlayer();
@@ -330,6 +360,7 @@ void MainWindow::videoPlayer()
     }
     else
         decoder.setNumOfFrames(mNumOfFrames);
+    ui->horizontalSlider->setRange(0, mNumOfFrames);
     decoder.start();
 }
 

@@ -95,9 +95,6 @@ void Decoder::run()
 {
     for(;;)
     {
-
-
-
         int err;
 
         if (canRead)
@@ -184,7 +181,7 @@ void Decoder::run()
                 if(!mIfPaused || mStop) break;
             }
         }
-        playerSleepThread();
+//        playerSleepThread();
         if(mStop) break;
     }
 }
@@ -242,7 +239,7 @@ void Decoder::loopPlayCond()
 {
     ++mFrameIterator;
 //    qDebug()<<"mFrame"<<mFrameIterator<<"numof"<<numOfFrames;
-   if(mFrameIterator == numOfFrames)// break; //runs only the given number of frames
+   if(mFrameIterator >= numOfFrames)// break; //runs only the given number of frames
    {
 //       int64_t ts = stream->time_base.den * desiredPos / stream->time_base.num; //old
 //       qDebug()<<ts;
@@ -349,7 +346,6 @@ int Decoder::getWidth()
 
 int Decoder::getFrameIterator()
 {
-
     return mFrameIterator;
 }
 
@@ -361,8 +357,8 @@ double Decoder::getVideoFps()
 void Decoder::setNewSliderValue(int sliderValue)
 {
     mifUserSetNewValue = true;
-    userDesideredPos = desiredPos + ((numOfFrames * sliderValue / 1000)) / getVideoFps();
-    mFrameIterator = sliderValue * numOfFrames / 1000;
+    userDesideredPos = desiredPos + sliderValue / getVideoFps();
+    mFrameIterator = sliderValue;
 }
 
 int Decoder::getHeight()
