@@ -24,20 +24,23 @@ public:
 
     int numOfFrames() const;
     double initTimeCode() const;
-    QString getInputFileName() const;
+    bool dialAccepted();
+    QString getInputFilePath() const;
 
+//signals:
+//    void ifClosedChecked(bool check);
 private slots:
     void on_pushButton_pressed();
 
-    void on_buttonBox_accepted();
-
-    void on_buttonBox_rejected();
-
     void on_pushButton_advanced_pressed();
 
+    void on_pushButton_cancel_clicked();
+
+    void on_pushButton_import_clicked();
 
 private:
     bool mIfAdvanced = false;
+    bool dialacp = false;
     Ui::InitialDialog *ui;
 };
 

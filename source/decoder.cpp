@@ -131,9 +131,18 @@ void Decoder::run()
 
         err = avcodec_receive_frame(codexCtx, frame);
         if (err == AVERROR(EAGAIN))
+        {
+            if (!canRead && fluhed)
+            {
+                if (!loopPlayCond(true))
+                    break;
+            }
             continue;
+        }
         else if (err != 0)
+        {
             break;
+        }
 
         const double currPos = av_q2d(stream->time_base) * frame->best_effort_timestamp;
 
@@ -235,11 +244,12 @@ QImage Decoder::imgToRGB()
     return qImg;
 }
 
-void Decoder::loopPlayCond()
+bool Decoder::loopPlayCond(bool force)
 {
+    bool ok = false;
     ++mFrameIterator;
 //    qDebug()<<"mFrame"<<mFrameIterator<<"numof"<<numOfFrames;
-   if(mFrameIterator >= numOfFrames)// break; //runs only the given number of frames
+   if(force || mFrameIterator >= numOfFrames)// break; //runs only the given number of frames
    {
 //       int64_t ts = stream->time_base.den * desiredPos / stream->time_base.num; //old
 //       qDebug()<<ts;
@@ -248,9 +258,16 @@ void Decoder::loopPlayCond()
        if (av_seek_frame(fmtCtx, stream->index, ts, AVSEEK_FLAG_BACKWARD) >= 0)
        {
            avcodec_flush_buffers(codexCtx);
+
+           fluhed = false;
+           canRead = false;
+
+           ok = true;
        }
        mFrameIterator = 0;
    }
+
+   return ok;
 }
 
 bool Decoder::readFrame()

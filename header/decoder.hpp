@@ -48,7 +48,7 @@ public:
     void stop();
     void playerSleepThread();
     QImage imgToRGB();
-    void loopPlayCond();
+    bool loopPlayCond(bool force = false);
     int getHeight();
     int getWidth();
     int getFrameIterator();

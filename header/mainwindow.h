@@ -35,7 +35,7 @@ public:
     bool checkIfInitAborded();
 
     void importVideo();
-    void videoPlayer();
+    void videoPlayer(QString videoPath, int numOfFram, double tc);
     void videoFrameLoop();
     void paintEvent(QPaintEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;

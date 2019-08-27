@@ -73,12 +73,9 @@ MainWindow::MainWindow(const QString msfLogo, QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-//    decoder.stop();
-//    decoder.wait();
-    if(ui)
-    {
-        delete ui;
-    }
+    decoder.stop();
+    decoder.wait();
+    delete ui;
 }
 
 void MainWindow::paintEvent(QPaintEvent *event)
@@ -333,25 +330,25 @@ bool MainWindow::checkIfInitAborded()
 void MainWindow::importVideo()
 {
 
-    initDialog.setWindowTitle("Import video");
-    initDialog.show();
+//    initDialog.setWindowTitle("Import video");
+//    initDialog.show();
 
-    if (initDialog.exec() == QDialog::Rejected)
-    {
-        initAborted = true;
-        this->deleteLater();
-        return;
-    }
-    videoPlayer();
+//    if (initDialog.exec() == QDialog::Rejected)
+//    {
+//        initAborted = true;
+//        this->deleteLater();
+//        return;
+//    }
+//    videoPlayer();
 }
 
-void MainWindow::videoPlayer()
+void MainWindow::videoPlayer(QString videoPath, int numOfFram, double tc)
 {
-    mVideoInPutPath = initDialog.getInputFileName();
+    mVideoInPutPath = videoPath;
     cutFileNameWithFormat();
     mFileName = mFileNameWithFormat.left(mFileNameWithFormat.indexOf("."));
-    mNumOfFrames = initDialog.numOfFrames(); //does it just once
-    decoder.setVidInitPos(initDialog.initTimeCode());
+    mNumOfFrames = numOfFram; //does it just once
+    decoder.setVidInitPos(tc);
     decoder.decodeFile(mVideoInPutPath);
     if(mNumOfFrames == 0)
     {

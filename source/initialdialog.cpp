@@ -14,6 +14,7 @@ InitialDialog::InitialDialog(QWidget *parent) :
     ui->pushButton_advanced->setStyleSheet("background-color: transparent; border: none;");
     ui->widgetAdvanced->setStyleSheet("font: italic;");
     resize(400,100);
+//    QDialog::setResult(2);
 }
 
 InitialDialog::~InitialDialog()
@@ -48,7 +49,12 @@ double InitialDialog::initTimeCode() const
     return ui->SpinBoxTimeCode->value();
 }
 
-QString InitialDialog::getInputFileName() const
+bool InitialDialog::dialAccepted()
+{
+    return dialacp;
+}
+
+QString InitialDialog::getInputFilePath() const
 {
     return ui->lineEditVideoPath->text();
 }
@@ -57,23 +63,6 @@ void InitialDialog::on_pushButton_pressed() //do dopisania
 {
     QString fileName = QFileDialog::getOpenFileName(this, "Open file");
     ui->lineEditVideoPath->setText(fileName);
-}
-
-void InitialDialog::on_buttonBox_accepted()
-{
-    if(ui->lineEditVideoPath->text() != "")
-    {
-        QDialog::accept();
-    }
-    else
-    {
-        QMessageBox::warning(this, "Error", "Missing video path");
-    }
-}
-
-void InitialDialog::on_buttonBox_rejected()
-{
-    QDialog::rejected();
 }
 
 void InitialDialog::on_pushButton_advanced_pressed()
@@ -91,4 +80,31 @@ void InitialDialog::on_pushButton_advanced_pressed()
         resize(400,100);
     }
     ui->pushButton_advanced->setText(mIfAdvanced ? "- Advanced settings" : "+ Advanced settings");
+}
+
+void InitialDialog::on_pushButton_cancel_clicked()
+{
+    qDebug()<<"cancel";
+//     QDialog::setResult(0);
+//    dialClosed = true;
+//    emit ifClosedChecked(dialClosed);
+    QDialog::reject();
+    qApp->exit();
+//    close();
+}
+
+void InitialDialog::on_pushButton_import_clicked()
+{
+    if(!ui->lineEditVideoPath->text().isEmpty())
+    {
+        dialacp = true;
+//        QDialog::setResult(1);
+        QDialog::accept();
+        qDebug()<< result();
+    }
+    else
+    {
+        dialacp = false;
+        QMessageBox::warning(this, "Error", "Missing video path");
+    }
 }
