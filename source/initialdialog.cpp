@@ -1,6 +1,7 @@
 #include "initialdialog.h"
 #include "ui_initialdialog.h"
 #include <QDebug>
+#include <QTimer>
 
 InitialDialog::InitialDialog(QWidget *parent) :
     QDialog(parent),
@@ -77,7 +78,11 @@ void InitialDialog::on_pushButton_advanced_pressed()
     {
         ui->widgetFrames->hide();
         ui->widgetTimeCode->hide();
-        resize(400,100);
+        QTimer::singleShot(0, this, [this] {
+            QTimer::singleShot(0, this, [this] {
+                resize(width(), 1);
+            });
+        });
     }
     ui->pushButton_advanced->setText(mIfAdvanced ? "- Advanced settings" : "+ Advanced settings");
 }

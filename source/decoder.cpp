@@ -13,7 +13,7 @@ Decoder::Decoder()
 
 Decoder::~Decoder()
 {
-//    av_frame_free(&frame); //cleaning but here it's lags entire program on exit
+    av_frame_free(&frame); //cleaning but here it's lags entire program on exit
 }
 
 bool Decoder::getPacket()
@@ -103,9 +103,9 @@ void Decoder::run()
             if (err != 0)
             {
                 canRead = false;
+                qDebug() << "Read frame error:" << err;
             }
-
-            if (pkt->stream_index != stream->index)
+            else if (pkt->stream_index != stream->index)
             {
                 av_packet_unref(pkt);
                 continue;
@@ -122,9 +122,14 @@ void Decoder::run()
             av_packet_unref(pkt);
 
             if (err == AVERROR(EAGAIN))
+            {
                 continue;
+            }
             else if (err != 0)
+            {
+                qDebug() << "Send packet error:" << err;
                 break;
+            }
         }
 
         scrollVideo();
@@ -132,16 +137,17 @@ void Decoder::run()
         err = avcodec_receive_frame(codexCtx, frame);
         if (err == AVERROR(EAGAIN))
         {
-            if (!canRead && fluhed)
-            {
-                if (!loopPlayCond(true))
-                    break;
-            }
             continue;
         }
         else if (err != 0)
         {
-            break;
+//            char errBuff[AV_ERROR_MAX_STRING_SIZE];
+//            av_make_error_string(errBuff, sizeof(errBuff), err);
+//            qDebug() << "Receive frame error:" << err << errBuff << -541478725 << AVERROR(EOF);
+
+            if (!loopPlayCond(true))
+                break;
+            continue;
         }
 
         const double currPos = av_q2d(stream->time_base) * frame->best_effort_timestamp;
@@ -260,7 +266,7 @@ bool Decoder::loopPlayCond(bool force)
            avcodec_flush_buffers(codexCtx);
 
            fluhed = false;
-           canRead = false;
+           canRead = true;
 
            ok = true;
        }
