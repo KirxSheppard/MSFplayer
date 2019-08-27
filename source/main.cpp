@@ -21,28 +21,20 @@ int main(int argc, char *argv[])
 
    InitialDialog initDial;
    initDial.setWindowTitle("Import video");
-//   initDial.show();
-
-//   QMetaObject::invokeMethod(&initDial, "exec", Qt::QueuedConnection);
 
    if (initDial.exec() == QDialog::Accepted)
    {
-       qDebug()<<"sdcsd";
         videoInPutPath = initDial.getInputFilePath();
         numOfFrames = initDial.numOfFrames();
         startFromTimeCode = initDial.initTimeCode();
         accepted = true;
+   }
+   else return 0;
 
-   }
-   else {
-      return 0;
-   }
 
 
    MainWindow w(msfLogo);
    w.setWindowTitle("MSF FFmpeg player");
-   //   w.importVideo();
-   //   w.videoPlayer("/Users/kamil/Desktop/Target Earth - Festiwal.mp4", 100, 2.2);
    w.videoPlayer(videoInPutPath, numOfFrames, startFromTimeCode);
    w.show();
 

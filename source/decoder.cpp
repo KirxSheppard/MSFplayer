@@ -70,7 +70,7 @@ void Decoder::scrollVideo()
         {
             avcodec_flush_buffers(codexCtx);
         }
-//        desiredPos = userDesideredPos;
+        mPrevTime = 0.0;
     }
     mifUserSetNewValue = false;
 }
@@ -196,7 +196,7 @@ void Decoder::run()
                 if(!mIfPaused || mStop) break;
             }
         }
-//        playerSleepThread();
+        playerSleepThread();
         if(mStop) break;
     }
 }
@@ -257,8 +257,6 @@ bool Decoder::loopPlayCond(bool force)
 //    qDebug()<<"mFrame"<<mFrameIterator<<"numof"<<numOfFrames;
    if(force || mFrameIterator >= numOfFrames)// break; //runs only the given number of frames
    {
-//       int64_t ts = stream->time_base.den * desiredPos / stream->time_base.num; //old
-//       qDebug()<<ts;
        int64_t ts = av_q2d(stream->avg_frame_rate) * desiredPos;
        cerr << ts << endl;
        if (av_seek_frame(fmtCtx, stream->index, ts, AVSEEK_FLAG_BACKWARD) >= 0)
@@ -355,8 +353,6 @@ bool Decoder::decodeFile(const QString &videoInPut)
    {
        avcodec_flush_buffers(codexCtx);
    }
-
-//   start();
    return true;
 }
 
