@@ -6,9 +6,6 @@ const QString msfLogo  = "/Users/kamil/Desktop/Studia/VideoDecodeFFMPEG/resource
 QString videoInPutPath;
 int numOfFrames;
 double startFromTimeCode;
-bool accepted = false;
-
-
 
 int main(int argc, char *argv[])
 {
@@ -27,11 +24,8 @@ int main(int argc, char *argv[])
         videoInPutPath = initDial.getInputFilePath();
         numOfFrames = initDial.numOfFrames();
         startFromTimeCode = initDial.initTimeCode();
-        accepted = true;
    }
    else return 0;
-
-
 
    MainWindow w(msfLogo);
    w.setWindowTitle("MSF FFmpeg player");

@@ -13,6 +13,7 @@
 #include <QtConcurrent/QtConcurrentRun>
 #include <QtMath>
 #include <QElapsedTimer>
+#include <QTimer>
 
 namespace Ui {
 class MainWindow;
@@ -34,16 +35,17 @@ public:
     bool checkIfNewSliderValue();
     bool checkIfInitAborded();
 
-    void importVideo();
     void videoPlayer(QString videoPath, int numOfFram, double tc);
     void videoFrameLoop();
     void paintEvent(QPaintEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *e) override;
     void closeEvent(QCloseEvent *event) override;
     void adjustColor(int initPos, int step, int value);
     void rgb2Hsv(int type, int valueToAdd);
     void cutFileNameWithFormat();
+    void colorRgbModification();
 
     //Slots
     void setVideoTimeCode(double videoTime);
@@ -61,6 +63,7 @@ public:
     void setBlueChannel(int value);
     void setBlueChannelState(bool blueState);
 public slots:
+    void hideInterface();
     void on_horizontalSlider_valueChanged(int value);
     void on_actionexit_triggered();    
 private slots:
@@ -86,7 +89,7 @@ private:
 
     Slider slider;
     QList<QImage> m_imgs;
-    QList<QImage> m_imgsBuff;
+    QImage m_imgGOps;
     QString mVideoInPutPath, mMsfLogoPath, mFileNameWithFormat, mFileOutPut, mFileName;
     bool ifExit, ifSave, ifPaused, ifWaterMark, ifBrightOpt, ifNewSlierValue, ifOnionSkinning, ifRedOpt, ifGreenOpt, ifBlueOpt, ifOnScreenPressed;
     int height, width;
@@ -100,15 +103,19 @@ private:
     int logoHeight = 200;
     int logoWidth = 200;
     int mNewSliderValue;
-    QString mMinutes, mSeconds;
+    QString mMinutes, mSeconds, mRemMinutes, mRemSeconds;
     QString mVideoCurrPos = "00:00";
+    QString mRemVideoTime = "00:00";
 
     bool sliderPressed = false;
     bool initWindowWasUsed = false;
     bool initAborted = false;
 
     QRect onScreenPlayPause;
-    QElapsedTimer timer;
+//    QElapsedTimer timer;
+    QTimer *timer;
+
+
 };
 
 #endif // MAINWINDOW_H

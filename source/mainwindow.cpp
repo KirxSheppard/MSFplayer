@@ -7,10 +7,15 @@
 #include <QVector4D>
 #include <QVector3D>
 
+constexpr int g_timeOut = 4000;
+
 MainWindow::MainWindow(const QString msfLogo, QWidget *parent) :
     QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
+    timer = new QTimer(this);
+    timer->setSingleShot(true);
+    timer->start(g_timeOut);
 
     ui->setupUi(this);
     ui->statusbar->setStyleSheet("color: white");
@@ -30,6 +35,8 @@ MainWindow::MainWindow(const QString msfLogo, QWidget *parent) :
     ui->playPauseButton->setIcon(QIcon(":/resources/pause.png"));
     ui->timelabel->setStyleSheet("color: white");
     ui->timelabel->setText(mVideoCurrPos);
+    ui->labelRemainingTime->setStyleSheet("color: white");
+    ui->labelRemainingTime->setText(mRemVideoTime);
 
     ifSave = false;
     ifPaused = false;
@@ -46,6 +53,8 @@ MainWindow::MainWindow(const QString msfLogo, QWidget *parent) :
     mMsfLogoPath = msfLogo;
 
 //    qRegisterMetaType<QVector<QImage>>();
+
+    connect(timer, &QTimer::timeout, this, &MainWindow::hideInterface);
 
     connect(&decoder, &Decoder::mRgb,
             this, &MainWindow::setImage);
@@ -80,22 +89,42 @@ MainWindow::~MainWindow()
 
 void MainWindow::paintEvent(QPaintEvent *event)
 {
-    ui->statusbar->showMessage(mFileNameWithFormat + " (" + QString::number(decoder.getVideoFps()) + "fps)");
+    QPainter p(this);
+    const QSize imgS =  m_imgGOps.size();
+    QSize s = imgS.scaled(size(), Qt::KeepAspectRatio);
+
+    p.drawImage(QRect(QPoint(), s), m_imgGOps);
 
 
-//    //new list for buffor
-//    if(m_imgsBuff.size() != 40) return;
+    //here it works fine without any weird glitches
+    this->resize(s.width(),s.height());
+
+}
+
+void MainWindow::setImage(const QImage &img)
+{
+    bool mChangeBuff = false;
+
+    //previous usage with only two items (current and prev)
+    if (m_imgs.size() >= 2)
+        m_imgs.removeFirst();
+    m_imgs.push_back(img);
 
     if (m_imgs.size() != 2) return;
 
-    QPainter painter(this);
+    colorRgbModification();
+
+    ui->statusbar->showMessage(mFileNameWithFormat + " (" + QString::number(decoder.getVideoFps()) + "fps)");
+
+    QPainter painter(&m_imgGOps);
     painter.setRenderHint(QPainter::SmoothPixmapTransform);
-    painter.fillRect(this->rect(),QColor("black"));
-    const QSize imgS =  m_imgs[1].size();
+//    painter.fillRect(this->rect(),QColor("black"));
+
+    const QSize imgS =  m_imgGOps.size();
     QSize s = imgS.scaled(size(), Qt::KeepAspectRatio);
 
-    //Keeps main window aspect ratio along with the displayed video
-    this->resize(s.width(),s.height());
+    //Keeps main window aspect ratio along with a displayed video
+//    this->resize(s.width(),s.height());
 
     //On screen rect for play/pause button
     onScreenPlayPause = QRect(s.width() / 4,
@@ -103,19 +132,8 @@ void MainWindow::paintEvent(QPaintEvent *event)
                               s.width() / 2,
                               s.height() / 2);
 
+//    painter.drawImage(QRect(QPoint(), s), m_imgGOps);
 
-    painter.drawImage(QRect(QPoint(), s), m_imgs[1]);
-
-    //Additional play/pause button on video screen
-    if(ifOnScreenPressed)
-    {
-        double t = timer.nsecsElapsed() / 1e9;
-//        qDebug()<<"timer: "<< t; //additional icon on screen
-        if(t >= 4.0)
-        {
-              ifOnScreenPressed = false;
-        }
-    }
     if (ifOnionSkinning)
     {
         painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
@@ -129,106 +147,6 @@ void MainWindow::paintEvent(QPaintEvent *event)
         painter.setOpacity(0.4);
         painter.drawImage(s.width() / 2 - waterMarkImg.width() / 2,  s.height() / 2 - waterMarkImg.height() / 2, waterMarkImg);
     }
-}
-
-void MainWindow::setImage(const QImage &img)
-{
-    bool mChangeBuff = false;
-    //previous usage with only two items (current and prev)
-    if (m_imgs.size() >= 2)
-        m_imgs.removeFirst();
-    m_imgs.push_back(img);
-
-//    //new list as a buffor, it is important to display multiplication of 50 just for now
-
-//    if (!mChangeBuff)
-//    {
-//        if(m_imgs.size() >= 50)
-//        {
-//            mChangeBuff = true;
-
-//        }
-//        m_imgs.push_back(img);
-//    }
-
-//    if(mChangeBuff)
-//    {
-//        if(m_imgsBuff.size() >= 50)
-//        {
-
-//        }
-//        m_imgsBuff.push_back(img);
-//    }
-
-
-
-
-
-    if(checkIfBrightness())
-    {
-        adjustColor(0, 1, mVidBright);
-//        rgb2Hsv(0, mVidBright); //temp values and place just to test it
-    }
-    if(ifRedOpt)
-    {
-        adjustColor(2, 4, mVidRed);
-    }
-    if(ifGreenOpt)
-    {
-        adjustColor(1, 4, mVidGreen);
-    }
-    if(ifBlueOpt)
-    {
-        adjustColor(0, 4, mVidBlue);
-    }
-
-//    //Just to test it first
-//    if(checkWaterMark() == true)
-//    {
-//        QImage waterMark(mMsfLogoPath);
-//        int logoLineSize = waterMark.bytesPerLine();
-//        uint8_t *srcLogo = waterMark.bits();
-
-//        uint8_t *data = m_imgs[1].bits();
-//        int w4 = m_imgs[1].width() * 4;
-//        int h = m_imgs[1].height();
-//        int ls = m_imgs[1].bytesPerLine();
-
-//        const int nTasks = QThread::idealThreadCount();
-
-//        auto task = [&](int i) {
-//            const int begin = (i + 0) * h / nTasks;
-//            const int end   = (i + 1) * h / nTasks;
-
-////            int yLogo = 0;
-//            for (int y = begin, yLogo = 0; y < end; y += 1)
-//            {
-//                if(y > h / 2) ++yLogo;
-
-//                for (int x = 0, xLogo = 0; x < w4; x += 1)
-//                {
-//                    if(x > w4 / 2) ++xLogo;
-
-//                    if(xLogo < logoWidth && yLogo < logoHeight)
-//                    {
-//                        double p3a = srcLogo[yLogo * logoLineSize + xLogo * 4 + 3] / 255.0;
-//                        double p3 = srcLogo[yLogo * logoLineSize + xLogo * 4] / 255.0;
-//                        data[y * ls + x] = (p3a * data[y * ls + x] + (1.0 - p3a) * data[y * ls + x]);
-//                    }
-//                    data[y * ls + x] = clamp((int)data[y * ls + x], 0, 255);
-//                }
-//            }
-//        };
-
-//        QVector<QFuture<void>> thrs(nTasks - 1);
-
-//        for (int i = 0; i < thrs.size(); ++i)
-//            thrs[i] = QtConcurrent::run(task, i);
-//        task(thrs.size());
-
-//        for (auto &&t : thrs)
-//            t.waitForFinished();
-//    }
 
     update();
 
@@ -236,7 +154,7 @@ void MainWindow::setImage(const QImage &img)
     {
         int pos = mFileOutPut.lastIndexOf(".");
         QString temp = mFileOutPut;
-        m_imgs[1].save(QString(temp.insert(pos,"_%1")).arg(mFrameSaveCounter, 6, 10, QLatin1Char('0')));
+        m_imgGOps.save(QString(temp.insert(pos,"_%1")).arg(mFrameSaveCounter, 6, 10, QLatin1Char('0')));
     }
 }
 
@@ -327,21 +245,6 @@ bool MainWindow::checkIfInitAborded()
     return initAborted;
 }
 
-void MainWindow::importVideo()
-{
-
-//    initDialog.setWindowTitle("Import video");
-//    initDialog.show();
-
-//    if (initDialog.exec() == QDialog::Rejected)
-//    {
-//        initAborted = true;
-//        this->deleteLater();
-//        return;
-//    }
-//    videoPlayer();
-}
-
 void MainWindow::videoPlayer(QString videoPath, int numOfFram, double tc)
 {
     mVideoInPutPath = videoPath;
@@ -350,20 +253,16 @@ void MainWindow::videoPlayer(QString videoPath, int numOfFram, double tc)
     mNumOfFrames = numOfFram; //does it just once
     decoder.setVidInitPos(tc);
     decoder.decodeFile(mVideoInPutPath);
-    if(mNumOfFrames == 0)
-    {
-//        qDebug()<<initDialog.initTimeCode()<<"  "<<decoder.getVideoFps();
-        mNumOfFrames = decoder.setDefaultFramNum();
-    }
-    else
-        decoder.setNumOfFrames(mNumOfFrames);
+
+    if (mNumOfFrames == 0) mNumOfFrames = decoder.setDefaultFramNum();
+    else decoder.setNumOfFrames(mNumOfFrames);
+
     ui->horizontalSlider->setRange(0, mNumOfFrames);
     decoder.start();
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
-    //    HANDLE id = (HANDLE)winId(); //for the future work to keep aspect ratio of the main window
 }
 
 void MainWindow::mousePressEvent(QMouseEvent *event)
@@ -374,9 +273,20 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
         if(!ifPaused) ui->playPauseButton->setIcon(QIcon(":/resources/pause.png"));
         else  ui->playPauseButton->setIcon(QIcon(":/resources/play.png"));
         ifOnScreenPressed = true;
-        timer.start();
+//        timer.start();
         decoder.setPausedPlay();
     }
+
+    ui->vidProgWidget->setVisible(true);
+    timer->start(g_timeOut);
+}
+
+void MainWindow::mouseMoveEvent(QMouseEvent *e)
+{
+    ui->vidProgWidget->setVisible(true);
+    timer->start(g_timeOut);
+
+    QMainWindow::mouseMoveEvent(e);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -432,7 +342,6 @@ void MainWindow::on_actionwater_mark_triggered()
 
 void MainWindow::on_actionbrightness_triggered()
 {
-//    brightOpt = new BrightnessDialog(this);
     brightnessDialog.setWindowTitle("Color inspector");
     brightnessDialog.show();
 }
@@ -440,7 +349,12 @@ void MainWindow::on_actionbrightness_triggered()
 //Adjust brightness and RGB intensity
 void MainWindow::adjustColor(int initPos, int step, int value)
 {
-    uint8_t *data = m_imgs[1].bits();
+    if (m_imgs[1].size() != m_imgGOps.size() || m_imgs[1].format() != m_imgGOps.format())
+        m_imgGOps = QImage(m_imgs[1].size(), m_imgs[1].format());
+
+    uint8_t *src = m_imgs[1].bits();
+    uint8_t *dst = m_imgGOps.bits();
+
     int w4 = m_imgs[1].width() * 4;
     int h = m_imgs[1].height();
     int ls = m_imgs[1].bytesPerLine();
@@ -454,7 +368,7 @@ void MainWindow::adjustColor(int initPos, int step, int value)
         {
             for (int x = initPos; x < w4; x += step)
             {
-                data[y * ls + x] = clamp((int)data[y * ls + x] + value, 0, 255);
+                dst[y * ls + x] = clamp((int)src[y * ls + x] + value, 0, 255);
             }
         }
     };
@@ -671,6 +585,45 @@ void MainWindow::cutFileNameWithFormat()
     mFileNameWithFormat = mVideoInPutPath.right(pos);
 }
 
+void MainWindow::colorRgbModification()
+{
+    bool hasGOps = false;
+QElapsedTimer et;
+et.start();
+    if(checkIfBrightness())
+    {
+        adjustColor(0, 1, mVidBright);
+        hasGOps = true;
+//        rgb2Hsv(0, mVidBright); //temp values and place just to test it
+    }
+    if(ifRedOpt)
+    {
+        adjustColor(2, 4, mVidRed);
+        hasGOps = true;
+    }
+    if(ifGreenOpt)
+    {
+        adjustColor(1, 4, mVidGreen);
+        hasGOps = true;
+    }
+    if(ifBlueOpt)
+    {
+        adjustColor(0, 4, mVidBlue);
+        hasGOps = true;
+    }
+
+    if (!hasGOps)
+        m_imgGOps = m_imgs[1];
+    qDebug()<<et.nsecsElapsed()/1e66 << "ms";
+}
+
+void MainWindow::hideInterface()
+{
+    qDebug()<<"here";
+    ui->vidProgWidget->setVisible(false);
+    update();
+}
+
 void MainWindow::setVideoTimeCode(double videoTime)
 {
     int minutes = videoTime / 60;
@@ -679,6 +632,16 @@ void MainWindow::setVideoTimeCode(double videoTime)
     minutes < 10 ? mMinutes = "0" + QString::number(minutes) : mMinutes = QString::number(minutes);
     mVideoCurrPos = mMinutes + ":" + mSeconds;
     ui->timelabel->setText(mVideoCurrPos);
+
+
+    double videoRem = decoder.getVideoDuration() - videoTime;
+    int rminutes = videoRem / 60;
+    int rseconds = (int)videoRem % 60;
+    rseconds < 10 ? mRemSeconds = "0" + QString::number(rseconds) : mRemSeconds = QString::number(rseconds);
+    rminutes < 10 ? mRemMinutes = "0" + QString::number(rminutes) : mRemMinutes = QString::number(rminutes);
+    mRemVideoTime = mRemMinutes + ":" + mRemSeconds;
+    ui->labelRemainingTime->setText(mRemVideoTime);
+    update();
 }
 
 void MainWindow::setBrightness(int value)

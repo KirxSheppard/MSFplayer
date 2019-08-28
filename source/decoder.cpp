@@ -254,8 +254,7 @@ bool Decoder::loopPlayCond(bool force)
 {
     bool ok = false;
     ++mFrameIterator;
-//    qDebug()<<"mFrame"<<mFrameIterator<<"numof"<<numOfFrames;
-   if(force || mFrameIterator >= numOfFrames)// break; //runs only the given number of frames
+   if(force || mFrameIterator >= numOfFrames) //runs only the given number of frames
    {
        int64_t ts = av_q2d(stream->avg_frame_rate) * desiredPos;
        cerr << ts << endl;
@@ -311,7 +310,6 @@ double Decoder::getVideoDuration()
 {
     //Returns total video duration in seconds
     mVideoDuration =  1.0 * fmtCtx->duration / (AV_TIME_BASE * 1.0);
-//    qDebug()<<"Video duration: "<< mVideoDuration; //no need for this in the future
     return mVideoDuration;
 }
 
