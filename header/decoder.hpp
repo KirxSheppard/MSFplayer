@@ -60,6 +60,9 @@ signals:
     void videoTimeCode(const double videoTime);
 
 private:
+    void adjustColor(int initPos, int step, int value);
+
+private:
     static QString videoInPut;
     QString frameOutPut;
     QString msfLogo;

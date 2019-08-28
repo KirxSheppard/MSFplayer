@@ -42,10 +42,8 @@ public:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *e) override;
     void closeEvent(QCloseEvent *event) override;
-    void adjustColor(int initPos, int step, int value);
     void rgb2Hsv(int type, int valueToAdd);
     void cutFileNameWithFormat();
-    void colorRgbModification();
 
     //Slots
     void setVideoTimeCode(double videoTime);

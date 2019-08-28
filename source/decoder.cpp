@@ -174,11 +174,33 @@ void Decoder::run()
         }
 
         //log
-        qDebug() << currPos
-                 << av_get_picture_type_char(frame->pict_type)
-                 << frame->key_frame;
+//        qDebug() << currPos
+//                 << av_get_picture_type_char(frame->pict_type)
+//                 << frame->key_frame;
 
         imgToRGB();
+
+        {
+//            if(checkIfBrightness())
+            {
+                adjustColor(0, 1, 50);
+            }
+//            if(ifRedOpt)
+//            {
+//                adjustColor(2, 4, mVidRed);
+//                hasGOps = true;
+//            }
+//            if(ifGreenOpt)
+//            {
+//                adjustColor(1, 4, mVidGreen);
+//                hasGOps = true;
+//            }
+//            if(ifBlueOpt)
+//            {
+//                adjustColor(0, 4, mVidBlue);
+//                hasGOps = true;
+//            }
+        }
 
         emit videoTimeCode(currPos);
         emit mRgb(qImg);
@@ -196,7 +218,7 @@ void Decoder::run()
                 if(!mIfPaused || mStop) break;
             }
         }
-        playerSleepThread();
+//        playerSleepThread();
         if(mStop) break;
     }
 }
@@ -383,4 +405,38 @@ int Decoder::getHeight()
     if(codexCtx != nullptr)
         mHeight = codexCtx->height;
     return mHeight;
+}
+
+//Adjust brightness and RGB intensity
+void Decoder::adjustColor(int initPos, int step, int value)
+{
+    uint8_t *src = qImg.bits();
+    uint8_t *dst = qImg.bits();
+
+    int w4 = qImg.width() * 4;
+    int h = qImg.height();
+    int ls = qImg.bytesPerLine();
+
+    const int nTasks = QThread::idealThreadCount();
+
+    auto task = [&](int i) {
+        const int begin = (i + 0) * h / nTasks;
+        const int end   = (i + 1) * h / nTasks;
+        for (int y = begin; y < end; y += 1)
+        {
+            for (int x = initPos; x < w4; x += step)
+            {
+                dst[y * ls + x] = clamp((int)src[y * ls + x] + value, 0, 255);
+            }
+        }
+    };
+
+    QVector<QFuture<void>> thrs(nTasks - 1);
+
+    for (int i = 0; i < thrs.size(); ++i)
+        thrs[i] = QtConcurrent::run(task, i);
+    task(thrs.size());
+
+    for (auto &&t : thrs)
+        t.waitForFinished();
 }

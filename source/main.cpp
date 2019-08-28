@@ -2,7 +2,7 @@
 #include "initialdialog.h"
 
 
-const QString msfLogo  = "/Users/kamil/Desktop/Studia/VideoDecodeFFMPEG/resources/ikonamsf.png";
+const QString msfLogo  = ":/resources/ikonamsf.png";
 QString videoInPutPath;
 int numOfFrames;
 double startFromTimeCode;
