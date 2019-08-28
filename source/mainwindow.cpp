@@ -56,28 +56,28 @@ MainWindow::MainWindow(const QString msfLogo, QWidget *parent) :
 
     connect(timer, &QTimer::timeout, this, &MainWindow::hideInterface);
 
+    connect(&decoder, &Decoder::videoTimeCode,
+            this, &MainWindow::setVideoTimeCode);
     connect(&decoder, &Decoder::mRgb,
             this, &MainWindow::setImage);
     connect(&decoder, &Decoder::positon,
             this, &MainWindow::setSliderValue);
     connect(&brightnessDialog, &BrightnessDialog::ifBrightBool,
-            this, &MainWindow::setBrightState);
+            &decoder, &Decoder::setBrightState);
     connect(&brightnessDialog, &BrightnessDialog::brightValue,
-            this, &MainWindow::setBrightness);
+            &decoder, &Decoder::setBrightness);
     connect(&brightnessDialog, &BrightnessDialog::ifRedChannel,
-            this, &MainWindow::setRedChannelState);
+            &decoder, &Decoder::setRedChannelState);
     connect(&brightnessDialog, &BrightnessDialog::redValue,
-            this, &MainWindow::setRedChannel);
+            &decoder, &Decoder::setRedChannel);
     connect(&brightnessDialog, &BrightnessDialog::ifGreenChannel,
-            this, &MainWindow::setGreenChannelState);
+            &decoder, &Decoder::setGreenChannelState);
     connect(&brightnessDialog, &BrightnessDialog::greenValue,
-            this, &MainWindow::setGreenChannel);
+            &decoder, &Decoder::setGreenChannel);
     connect(&brightnessDialog, &BrightnessDialog::ifBlueChannel,
-            this, &MainWindow::setBlueChannelState);
+            &decoder, &Decoder::setBlueChannelState);
     connect(&brightnessDialog, &BrightnessDialog::blueValue,
-            this, &MainWindow::setBlueChannel);
-    connect(&decoder, &Decoder::videoTimeCode,
-            this, &MainWindow::setVideoTimeCode);
+            &decoder, &Decoder::setBlueChannel);
 }
 
 MainWindow::~MainWindow()
@@ -144,7 +144,7 @@ void MainWindow::setImage(const QImage &img)
         QImage waterMarkImg(mMsfLogoPath); //should be declared just once
         painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
         painter.setOpacity(0.4);
-        painter.drawImage(imgS.width() / 2 - waterMarkImg.width() / 2,  imgS.height() / 2 - waterMarkImg.height() / 2, waterMarkImg);
+        painter.drawImage(imgS.width() - waterMarkImg.width() - 20, 20, waterMarkImg); //here i can control water mark position
     }
 
     painter.end();
@@ -157,41 +157,6 @@ void MainWindow::setImage(const QImage &img)
         QString temp = mFileOutPut;
         m_imgGOps.save(QString(temp.insert(pos,"_%1")).arg(mFrameSaveCounter, 6, 10, QLatin1Char('0')));
     }
-}
-
-void MainWindow::setBrightState(bool brightState)
-{
-    ifBrightOpt = brightState;
-}
-
-void MainWindow::setRedChannel(int value)
-{
-    mVidRed = value;
-}
-
-void MainWindow::setRedChannelState(bool redState)
-{
-    ifRedOpt = redState;
-}
-
-void MainWindow::setGreenChannel(int value)
-{
-    mVidGreen = value;
-}
-
-void MainWindow::setGreenChannelState(bool greenState)
-{
-    ifGreenOpt = greenState;
-}
-
-void MainWindow::setBlueChannel(int value)
-{
-    mVidBlue = value;
-}
-
-void MainWindow::setBlueChannelState(bool blueState)
-{
-    ifBlueOpt = blueState;
 }
 
 void MainWindow::setSliderValue(int valueS)
@@ -229,11 +194,6 @@ bool MainWindow::checkIfPaused()
 bool MainWindow::checkWaterMark()
 {
     return ifWaterMark;
-}
-
-bool MainWindow::checkIfBrightness()
-{
-    return ifBrightOpt;
 }
 
 bool MainWindow::checkIfNewSliderValue()
@@ -274,7 +234,6 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
         if(!ifPaused) ui->playPauseButton->setIcon(QIcon(":/resources/pause.png"));
         else  ui->playPauseButton->setIcon(QIcon(":/resources/play.png"));
         ifOnScreenPressed = true;
-//        timer.start();
         decoder.setPausedPlay();
     }
 
@@ -574,11 +533,6 @@ void MainWindow::setVideoTimeCode(double videoTime)
     mRemVideoTime = mRemMinutes + ":" + mRemSeconds;
     ui->labelRemainingTime->setText(mRemVideoTime);
     update();
-}
-
-void MainWindow::setBrightness(int value)
-{
-    mVidBright = value;
 }
 
 void MainWindow::on_actiononion_skinning_triggered()

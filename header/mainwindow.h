@@ -31,7 +31,6 @@ public:
     bool checkifSave();
     bool checkIfPaused();
     bool checkWaterMark();
-    bool checkIfBrightness();
     bool checkIfNewSliderValue();
     bool checkIfInitAborded();
 
@@ -49,17 +48,6 @@ public:
     void setVideoTimeCode(double videoTime);
     void setSliderValue(int valueS);
     void setImage(const QImage &img);
-    void setBrightness(int value);
-    void setBrightState(bool brightState);
-
-    void setRedChannel(int value);
-    void setRedChannelState(bool redState);
-
-    void setGreenChannel(int value);
-    void setGreenChannelState(bool greenState);
-
-    void setBlueChannel(int value);
-    void setBlueChannelState(bool blueState);
 public slots:
     void hideInterface();
     void on_horizontalSlider_valueChanged(int value);
@@ -94,10 +82,6 @@ private:
     int mNumOfFrames = -1;
     int mNumOfExportFrames, mFrameSaveCounter;
     Decoder decoder;
-    int mVidBright = 0; //how much to brighten an image
-    int mVidRed = 0;
-    int mVidGreen = 0;
-    int mVidBlue = 0;
     int logoHeight = 200;
     int logoWidth = 200;
     int mNewSliderValue;
@@ -110,10 +94,7 @@ private:
     bool initAborted = false;
 
     QRect onScreenPlayPause;
-//    QElapsedTimer timer;
     QTimer *timer;
-
-
 };
 
 #endif // MAINWINDOW_H

@@ -5,7 +5,6 @@
 #include <QDebug>
 #include <QPainter>
 #include "includeffmpeg.h"
-#include "brightnessdialog.hpp"
 #include <QImage>
 #include <iostream>
 #include <QElapsedTimer>
@@ -54,6 +53,22 @@ public:
     int getFrameIterator();
     double getVideoFps();
 
+
+    //Slots
+    void setBrightness(int value);
+    void setBrightState(bool brightState);
+
+    void setRedChannel(int value);
+    void setRedChannelState(bool redState);
+
+    void setGreenChannel(int value);
+    void setGreenChannelState(bool greenState);
+
+    void setBlueChannel(int value);
+    void setBlueChannelState(bool blueState);
+
+
+
 signals:
     void mRgb(const QImage &qimg);
     void positon(const int currPos);
@@ -82,13 +97,23 @@ private:
     qint64 startTime = 0;
     qint64 numFrames = 0;
 
+    bool checkIfBrightness();
     bool hasFrameAfterSeek = false;
     bool canRead = true;
     bool fluhed = false;
     bool mStop = false;
     bool mifUserSetNewValue = false;
     bool mIfPaused = false;
+    bool ifBrightOpt = false;
+    bool ifRedOpt = false;
+    bool ifGreenOpt = false;
+    bool ifBlueOpt = false;
+
     int mNewSliderValue = -1;
+    int mVidBright = 0; //how much to brighten an image
+    int mVidRed = 0;
+    int mVidGreen = 0;
+    int mVidBlue = 0;
 
     double mVideoDuration = 0.0;
     uint8_t *data = nullptr;
@@ -98,8 +123,6 @@ private:
 
     int mFrameIterator = 0;
     int mHeight = 0, mWidth = 0;
-
-    BrightnessDialog brightDialog;
 
     QElapsedTimer et;
 

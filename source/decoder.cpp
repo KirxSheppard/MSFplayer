@@ -181,28 +181,27 @@ void Decoder::run()
         imgToRGB();
 
         {
-//            if(checkIfBrightness())
+            if(checkIfBrightness())
             {
-                adjustColor(0, 1, 50);
+                adjustColor(0, 1, mVidBright);
             }
-//            if(ifRedOpt)
-//            {
-//                adjustColor(2, 4, mVidRed);
-//                hasGOps = true;
-//            }
-//            if(ifGreenOpt)
-//            {
-//                adjustColor(1, 4, mVidGreen);
-//                hasGOps = true;
-//            }
-//            if(ifBlueOpt)
-//            {
-//                adjustColor(0, 4, mVidBlue);
-//                hasGOps = true;
-//            }
+            if(ifRedOpt)
+            {
+
+                adjustColor(2, 4, mVidRed);
+            }
+            if(ifGreenOpt)
+            {
+                adjustColor(1, 4, mVidGreen);
+            }
+            if(ifBlueOpt)
+            {
+                adjustColor(0, 4, mVidBlue);
+            }
         }
 
         emit videoTimeCode(currPos);
+
         emit mRgb(qImg);
 
         loopPlayCond();
@@ -218,7 +217,7 @@ void Decoder::run()
                 if(!mIfPaused || mStop) break;
             }
         }
-//        playerSleepThread();
+        playerSleepThread();
         if(mStop) break;
     }
 }
@@ -440,3 +439,49 @@ void Decoder::adjustColor(int initPos, int step, int value)
     for (auto &&t : thrs)
         t.waitForFinished();
 }
+
+void Decoder::setBrightness(int value)
+{
+    mVidBright = value;
+}
+
+void Decoder::setBrightState(bool brightState)
+{
+    ifBrightOpt = brightState;
+}
+
+void Decoder::setRedChannel(int value)
+{
+    mVidRed = value;
+}
+
+void Decoder::setRedChannelState(bool redState)
+{
+    ifRedOpt = redState;
+}
+
+void Decoder::setGreenChannel(int value)
+{
+    mVidGreen = value;
+}
+
+void Decoder::setGreenChannelState(bool greenState)
+{
+    ifGreenOpt = greenState;
+}
+
+void Decoder::setBlueChannel(int value)
+{
+    mVidBlue = value;
+}
+
+void Decoder::setBlueChannelState(bool blueState)
+{
+    ifBlueOpt = blueState;
+}
+
+bool Decoder::checkIfBrightness()
+{
+    return ifBrightOpt;
+}
+

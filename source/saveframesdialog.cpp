@@ -6,8 +6,6 @@ SaveFramesDialog::SaveFramesDialog(QWidget *parent) :
     ui(new Ui::SaveFramesDialog)
 {
     ui->setupUi(this);
-
-
 }
 
 SaveFramesDialog::~SaveFramesDialog()
@@ -25,12 +23,12 @@ void SaveFramesDialog::paintEvent(QPaintEvent *e)
 {
 //    QPainter painter(this);
     //background
-    //    painter.fillRect(this->rect(),QColor::fromRgb(100, 100, 100, 255));
+//    painter.fillRect(this->rect(),QColor::fromRgb(100, 100, 100, 255));
 }
 
 int SaveFramesDialog::numFramesToSave() const
 {
-    return ui->spinBox->value() + 1;
+    return ui->spinBox->value();
 }
 
 void SaveFramesDialog::accept()
