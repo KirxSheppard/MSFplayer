@@ -38,6 +38,23 @@ MainWindow::MainWindow(const QString msfLogo, QWidget *parent) :
     ui->labelRemainingTime->setStyleSheet("color: white");
     ui->labelRemainingTime->setText(mRemVideoTime);
 
+
+
+    opacityEffect = new QGraphicsOpacityEffect;
+    opacityEffect->setOpacity(1.0);
+    ui->vidProgWidget->setGraphicsEffect(opacityEffect);
+
+    animation = new QPropertyAnimation(opacityEffect, "opacity");
+    animation->setEasingCurve(QEasingCurve::Type::OutCubic);
+    animation->setStartValue(1.0);
+    animation->setEndValue(0.0);
+    animation->setDuration(750);
+
+    connect(animation, &QPropertyAnimation::finished,
+            this, [=] {
+        ui->vidProgWidget->setVisible(false);
+    });
+
     ifSave = false;
     ifPaused = false;
     ifWaterMark = false;
@@ -53,6 +70,18 @@ MainWindow::MainWindow(const QString msfLogo, QWidget *parent) :
     mMsfLogoPath = msfLogo;
 
 //    qRegisterMetaType<QVector<QImage>>();
+
+
+
+//    connect(animation, &QPropertyAnimation::finished,
+//            this, [animation] {
+//        if (animation->direction() == QAbstractAnimation::Forward) {
+//            animation->setDirection(QAbstractAnimation::Backward);
+//            QTimer::singleShot(1000, [animation] {
+//                animation->start();
+//            });
+//        }
+//    });
 
     connect(timer, &QTimer::timeout, this, &MainWindow::hideInterface);
 
@@ -90,6 +119,8 @@ MainWindow::~MainWindow()
 void MainWindow::paintEvent(QPaintEvent *event)
 {
     QPainter p(this);
+    p.setRenderHint(QPainter::SmoothPixmapTransform);
+
     const QSize imgS =  m_imgGOps.size();
     QSize s = imgS.scaled(size(), Qt::KeepAspectRatio);
 
@@ -122,7 +153,7 @@ void MainWindow::setImage(const QImage &img)
     ui->statusbar->showMessage(mFileNameWithFormat + " (" + QString::number(decoder.getVideoFps()) + "fps)");
 
     QPainter painter(&m_imgGOps);
-    painter.setRenderHint(QPainter::SmoothPixmapTransform);
+//    painter.setRenderHint(QPainter::SmoothPixmapTransform);
 //    painter.fillRect(this->rect(),QColor("black"));
 
     const QSize imgS =  m_imgGOps.size();
@@ -144,7 +175,7 @@ void MainWindow::setImage(const QImage &img)
         QImage waterMarkImg(mMsfLogoPath); //should be declared just once
         painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
         painter.setOpacity(0.4);
-        painter.drawImage(imgS.width() - waterMarkImg.width() - 20, 20, waterMarkImg); //here i can control water mark position
+        painter.drawImage(imgS.width() / 2 - waterMarkImg.width() / 2,  imgS.height() / 2 - waterMarkImg.height() / 2, waterMarkImg); //here i can control water mark position
     }
 
     painter.end();
@@ -237,12 +268,21 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
         decoder.setPausedPlay();
     }
 
+    animation->blockSignals(true);
+    animation->stop();
+    animation->blockSignals(false);
+    opacityEffect->setOpacity(1.0);
     ui->vidProgWidget->setVisible(true);
     timer->start(g_timeOut);
+
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *e)
 {
+    animation->blockSignals(true);
+    animation->stop();
+    animation->blockSignals(false);
+    opacityEffect->setOpacity(1.0);
     ui->vidProgWidget->setVisible(true);
     timer->start(g_timeOut);
 
@@ -510,9 +550,10 @@ void MainWindow::cutFileNameWithFormat()
 
 void MainWindow::hideInterface()
 {
-    qDebug()<<"here";
-    ui->vidProgWidget->setVisible(false);
-    update();
+//    qDebug()<<"here";
+    animation->start();
+//    ui->vidProgWidget->setVisible(false);
+//    update();
 }
 
 void MainWindow::setVideoTimeCode(double videoTime)

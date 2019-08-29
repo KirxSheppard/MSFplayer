@@ -27,6 +27,8 @@ public:
     bool dialAccepted();
     QString getInputFilePath() const;
 
+    void setFileName(const QString &fileName);
+
 //signals:
 //    void ifClosedChecked(bool check);
 private slots:

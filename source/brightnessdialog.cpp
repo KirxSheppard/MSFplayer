@@ -20,14 +20,15 @@ void BrightnessDialog::paintEvent(QPaintEvent *event)
     QPainter painter(this);
 
     //background
-    painter.fillRect(this->rect(),QColor::fromRgb(20, 20, 20, 255));
+    painter.fillRect(this->rect(), QColor::fromRgb(20, 20, 20, 255));
 
     //main background
-    QRadialGradient gradient(70, 270,300, 700, 20);
+    QRadialGradient gradient(70, height() - 10, width(), width() - 10, 20);
         gradient.setColorAt(1, QColor::fromRgbF(0.15, 0.15, 0.15, 1));
         gradient.setColorAt(0, QColor::fromRgbF(0.3, 0.3, 0.3, 0.8));
-        QBrush brush(gradient);
-    painter.fillRect(5, 5, 290, 270, gradient);
+    painter.setBrush(gradient);
+    painter.setPen(Qt::NoPen);
+    painter.drawRoundedRect(5, 5, width() - 10, height() - 10, 5.0, 5.0);
 }
 
 void BrightnessDialog::on_horizontalSlider_valueChanged(int value)

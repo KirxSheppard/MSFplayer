@@ -60,6 +60,11 @@ QString InitialDialog::getInputFilePath() const
     return ui->lineEditVideoPath->text();
 }
 
+void InitialDialog::setFileName(const QString &fileName)
+{
+    ui->lineEditVideoPath->setText(fileName);
+}
+
 void InitialDialog::on_pushButton_pressed() //do dopisania
 {
     QString fileName = QFileDialog::getOpenFileName(this, "Open file");

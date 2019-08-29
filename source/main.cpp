@@ -1,11 +1,36 @@
 #include "mainwindow.h"
 #include "initialdialog.h"
-
+#include <QFileOpenEvent>
 
 const QString msfLogo  = ":/resources/ikonamsf.png";
 QString videoInPutPath;
 int numOfFrames;
 double startFromTimeCode;
+
+class MyApplication : public QApplication
+{
+    Q_OBJECT
+
+public:
+    MyApplication(int &argc, char **argv)
+        : QApplication(argc, argv)
+    {
+    }
+
+    bool event(QEvent *event) override
+    {
+        if (event->type() == QEvent::FileOpen)
+        {
+            QFileOpenEvent *openEvent = static_cast<QFileOpenEvent *>(event);
+            emit newFile(openEvent->file());
+        }
+
+        return QApplication::event(event);
+    }
+
+signals:
+    void newFile(const QString &filePath);
+};
 
 int main(int argc, char *argv[])
 {
@@ -13,11 +38,14 @@ int main(int argc, char *argv[])
         cerr << c.line << ": " << qUtf8Printable(qFormatLogMessage(t, c, s)) << endl;
    });
 
-   QApplication a(argc, argv);
+   MyApplication a(argc, argv);
    a.setStyle("Fusion");
 
    InitialDialog initDial;
    initDial.setWindowTitle("Import video");
+
+   QObject::connect(&a, &MyApplication::newFile,
+                    &initDial, &InitialDialog::setFileName);
 
    if (initDial.exec() == QDialog::Accepted)
    {
@@ -34,3 +62,5 @@ int main(int argc, char *argv[])
 
    return a.exec();
 }
+
+#include <main.moc>

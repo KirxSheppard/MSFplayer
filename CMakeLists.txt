@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.10)
 ###############################################################################
 project(VideoDecodeFFMPEG)
 set(APPLICATION_NAME ${PROJECT_NAME})
-#set(APPLICATION_VERSION "1.0.0");
+set(APPLICATION_VERSION "1.0.0")
 
 
 ###############################################################################
@@ -17,11 +17,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
-
-# Prevent "Default" builds
-#if(NOT CMAKE_BUILD_TYPE)
-#    message(FATAL_ERROR "Please choose build type")
-#endif()
 
 ###############################################################################
 # FILES
@@ -36,7 +31,24 @@ file(GLOB PROJECT_FILES
 
 add_definitions(-DQT_MESSAGELOGCONTEXT)
 
-add_executable(${PROJECT_NAME} WIN32 ${PROJECT_FILES})
+if(APPLE)
+    set(MACOSX_BUNDLE_BUNDLE_VERSION "1")
+    set(MACOSX_BUNDLE_ICON_FILE "icon.icns")
+    set(MACOSX_BUNDLE_BUNDLE_NAME "MSF Player")
+    set(MACOSX_BUNDLE_SHORT_VERSION_STRING ${APPLICATION_VERSION})
+    set(MACOSX_BUNDLE_COPYRIGHT "Copyright (C) 2019  Kamil Janko")
+
+    set(ICNS_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/resources/icon.icns")
+    set_source_files_properties(${ICNS_FILE_PATH} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+endif()
+
+add_executable(${PROJECT_NAME}
+    WIN32
+    MACOSX_BUNDLE ${ICNS_FILE_PATH}
+    ${PROJECT_FILES}
+)
+
+set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "MSF Player")
 
 ###############################################################################
 # LIBS AND LINKING
@@ -58,3 +70,36 @@ target_link_libraries(${PROJECT_NAME}
     "/usr/local/lib/libavformat.dylib"
     "/usr/local/lib/libswscale.dylib"
 )
+
+###############################################################################
+# INSTALL
+###############################################################################
+if(APPLE)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/BundleInfo.plist.in")
+    install(TARGETS ${PROJECT_NAME} BUNDLE DESTINATION ${CMAKE_INSTALL_PREFIX})
+
+    set(QT_LIBS_DIR "${Qt5Core_DIR}/../..")
+    set(QT_PLUGINS_DIR "${QT_LIBS_DIR}/../plugins")
+    set(MAC_BUNDLE_PATH "${CMAKE_INSTALL_PREFIX}/MSF Player.app")
+    install(FILES
+        "${QT_PLUGINS_DIR}/platforms/libqcocoa.dylib"
+        DESTINATION "${MAC_BUNDLE_PATH}/Contents/plugins/platforms")
+    install(FILES
+        "${QT_PLUGINS_DIR}/styles/libqmacstyle.dylib"
+        DESTINATION "${MAC_BUNDLE_PATH}/Contents/plugins/styles")
+    install(DIRECTORY
+        "${QT_PLUGINS_DIR}/imageformats"
+        DESTINATION "${MAC_BUNDLE_PATH}/Contents/plugins"
+        PATTERN "*_debug.dylib" EXCLUDE
+        PATTERN "*.dSYM" EXCLUDE)
+    install(CODE "
+        include(BundleUtilities)
+        set(BU_CHMOD_BUNDLE_ITEMS ON)
+        list(APPEND DIRS /usr/local/lib ${QT_LIBS_DIR})
+        file(GLOB_RECURSE QT_PLUGINS
+            \"${MAC_BUNDLE_PATH}/Contents/plugins/*.dylib\")
+        file(WRITE \"${MAC_BUNDLE_PATH}/Contents/Resources/qt.conf\")
+        fixup_bundle(\"${MAC_BUNDLE_PATH}\" \"\${QT_PLUGINS}\" \"\${DIRS}\")
+    ")
+endif()

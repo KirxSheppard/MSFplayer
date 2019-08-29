@@ -14,6 +14,8 @@
 #include <QtMath>
 #include <QElapsedTimer>
 #include <QTimer>
+#include <QPropertyAnimation>
+#include <QGraphicsOpacityEffect>
 
 namespace Ui {
 class MainWindow;
@@ -70,6 +72,8 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    QPropertyAnimation  *animation;
+    QGraphicsOpacityEffect *opacityEffect;
     BrightnessDialog brightnessDialog;
     InitialDialog initDialog;
 
