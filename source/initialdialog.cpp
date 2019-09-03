@@ -94,13 +94,8 @@ void InitialDialog::on_pushButton_advanced_pressed()
 
 void InitialDialog::on_pushButton_cancel_clicked()
 {
-    qDebug()<<"cancel";
-//     QDialog::setResult(0);
-//    dialClosed = true;
-//    emit ifClosedChecked(dialClosed);
     QDialog::reject();
-    qApp->exit();
-//    close();
+//    qApp->exit();
 }
 
 void InitialDialog::on_pushButton_import_clicked()
@@ -108,7 +103,6 @@ void InitialDialog::on_pushButton_import_clicked()
     if(!ui->lineEditVideoPath->text().isEmpty())
     {
         dialacp = true;
-//        QDialog::setResult(1);
         QDialog::accept();
         qDebug()<< result();
     }

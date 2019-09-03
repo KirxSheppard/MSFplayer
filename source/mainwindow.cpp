@@ -69,20 +69,6 @@ MainWindow::MainWindow(const QString msfLogo, QWidget *parent) :
     mFrameSaveCounter = 0;
     mMsfLogoPath = msfLogo;
 
-//    qRegisterMetaType<QVector<QImage>>();
-
-
-
-//    connect(animation, &QPropertyAnimation::finished,
-//            this, [animation] {
-//        if (animation->direction() == QAbstractAnimation::Forward) {
-//            animation->setDirection(QAbstractAnimation::Backward);
-//            QTimer::singleShot(1000, [animation] {
-//                animation->start();
-//            });
-//        }
-//    });
-
     connect(timer, &QTimer::timeout, this, &MainWindow::hideInterface);
 
     connect(&decoder, &Decoder::videoTimeCode,
@@ -153,14 +139,8 @@ void MainWindow::setImage(const QImage &img)
     ui->statusbar->showMessage(mFileNameWithFormat + " (" + QString::number(decoder.getVideoFps()) + "fps)");
 
     QPainter painter(&m_imgGOps);
-//    painter.setRenderHint(QPainter::SmoothPixmapTransform);
-//    painter.fillRect(this->rect(),QColor("black"));
 
     const QSize imgS =  m_imgGOps.size();
-//    QSize s = imgS.scaled(size(), Qt::KeepAspectRatio);
-
-    //Keeps main window aspect ratio along with a displayed video
-//    this->resize(s.width(),s.height());
 
     painter.drawImage(QRect(QPoint(), imgS), m_imgs[1]);
 

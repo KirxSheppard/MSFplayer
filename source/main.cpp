@@ -24,7 +24,6 @@ public:
             QFileOpenEvent *openEvent = static_cast<QFileOpenEvent *>(event);
             emit newFile(openEvent->file());
         }
-
         return QApplication::event(event);
     }
 

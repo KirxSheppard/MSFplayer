@@ -29,8 +29,6 @@ public:
 
     void setFileName(const QString &fileName);
 
-//signals:
-//    void ifClosedChecked(bool check);
 private slots:
     void on_pushButton_pressed();
 
