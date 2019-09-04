@@ -40,6 +40,9 @@ if(APPLE)
 
     set(ICNS_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/resources/icon.icns")
     set_source_files_properties(${ICNS_FILE_PATH} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+elseif(WIN32)
+    # set RC file
+    list(APPEND PROJECT_FILES "icons.rc")
 endif()
 
 add_executable(${PROJECT_NAME}
@@ -50,26 +53,52 @@ add_executable(${PROJECT_NAME}
 
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "MSF Player")
 
-###############################################################################
-# LIBS AND LINKING
-###############################################################################
-find_package(Qt5 COMPONENTS Widgets Core REQUIRED)
-
 target_include_directories(${PROJECT_NAME}
     PRIVATE
-    "/usr/local/include"
     "source"
     "header"
     "forms"
 )
 
+###############################################################################
+# LIBS AND LINKING
+###############################################################################
+find_package(Qt5 COMPONENTS Widgets Core REQUIRED)
+
 target_link_libraries(${PROJECT_NAME}
     Qt5::Widgets
-    "/usr/local/lib/libavcodec.dylib"
-    "/usr/local/lib/libavutil.dylib"
-    "/usr/local/lib/libavformat.dylib"
-    "/usr/local/lib/libswscale.dylib"
 )
+
+if(APPLE)
+    target_link_libraries(${PROJECT_NAME}
+        "/usr/local/lib/libavcodec.dylib"
+        "/usr/local/lib/libavutil.dylib"
+        "/usr/local/lib/libavformat.dylib"
+        "/usr/local/lib/libswscale.dylib"
+    )
+    target_include_directories(${PROJECT_NAME}
+        PRIVATE
+        "/usr/local/include"
+    )
+elseif(WIN32)
+    target_link_libraries(${PROJECT_NAME}
+        "C:/Users/Sheppard/Downloads/ffmpeg-4.1.3-win64-dev/ffmpeg-4.1.3-win64-dev/lib/avcodec.lib"
+        "C:/Users/Sheppard/Downloads/ffmpeg-4.1.3-win64-dev/ffmpeg-4.1.3-win64-dev/lib/avutil.lib"
+        "C:/Users/Sheppard/Downloads/ffmpeg-4.1.3-win64-dev/ffmpeg-4.1.3-win64-dev/lib/avformat.lib"
+        "C:/Users/Sheppard/Downloads/ffmpeg-4.1.3-win64-dev/ffmpeg-4.1.3-win64-dev/lib/swscale.lib"
+    )
+    target_include_directories(${PROJECT_NAME}
+        PRIVATE
+        "C:/Users/Sheppard/Downloads/ffmpeg-4.1.3-win64-dev/ffmpeg-4.1.3-win64-dev/include"
+    )
+else()
+    target_link_libraries(${PROJECT_NAME}
+        "libavcodec.so"
+        "libavutil.so"
+        "libavformat.so"
+        "libswscale.so"
+    )
+endif()
 
 ###############################################################################
 # INSTALL

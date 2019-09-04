@@ -38,13 +38,19 @@ int main(int argc, char *argv[])
    });
 
    MyApplication a(argc, argv);
-   a.setStyle("Fusion");
+
+#ifndef Q_OS_WINDOWS
+    a.setStyle("Fusion");
+#endif
 
    InitialDialog initDial;
    initDial.setWindowTitle("Import video");
 
    QObject::connect(&a, &MyApplication::newFile,
                     &initDial, &InitialDialog::setFileName);
+
+   if (argc > 1)
+       initDial.setFileName(argv[1]);
 
    if (initDial.exec() == QDialog::Accepted)
    {
@@ -55,7 +61,7 @@ int main(int argc, char *argv[])
    else return 0;
 
    MainWindow w(msfLogo);
-   w.setWindowTitle("MSF FFmpeg player");
+   w.setWindowTitle("MSF Player");
    w.videoPlayer(videoInPutPath, numOfFrames, startFromTimeCode);
    w.show();
 

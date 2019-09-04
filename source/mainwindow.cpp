@@ -6,6 +6,8 @@
 #include <cmath>
 #include <QVector4D>
 #include <QVector3D>
+#include <QTimer>
+#include <cctype>
 
 constexpr int g_timeOut = 4000;
 
@@ -37,8 +39,6 @@ MainWindow::MainWindow(const QString msfLogo, QWidget *parent) :
     ui->timelabel->setText(mVideoCurrPos);
     ui->labelRemainingTime->setStyleSheet("color: white");
     ui->labelRemainingTime->setText(mRemVideoTime);
-
-
 
     opacityEffect = new QGraphicsOpacityEffect;
     opacityEffect->setOpacity(1.0);
@@ -121,14 +121,15 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
     //here it works fine without any weird glitches
     this->resize(s.width(),s.height());
-
 }
 
 void MainWindow::setImage(const QImage &img)
 {
-    //previous usage with only two items (current and prev)
+    //only two items (current and prev)
     if (m_imgs.size() >= 2)
         m_imgs.removeFirst();
+    else if (m_imgs.empty()) //allows to display photos
+        m_imgs.push_back(img);
     m_imgs.push_back(img);
 
     if (m_imgs.size() != 2) return;
@@ -136,7 +137,14 @@ void MainWindow::setImage(const QImage &img)
     if (m_imgGOps.size() != m_imgs[1].size() || m_imgGOps.format() != m_imgs[1].format())
         m_imgGOps = QImage(m_imgs[1].size(), m_imgs[1].format());
 
-    ui->statusbar->showMessage(mFileNameWithFormat + " (" + QString::number(decoder.getVideoFps()) + "fps)");
+    if(auto fps = decoder.getVideoFps(); fps == fps)
+    {
+        ui->statusbar->showMessage(mFileNameWithFormat + " (" + QString::number(decoder.getVideoFps()) + "fps)");
+    }
+    else {
+        ui->vidProgWidget->hide();
+        ui->statusbar->showMessage(mFileNameWithFormat);
+    }
 
     QPainter painter(&m_imgGOps);
 
@@ -252,6 +260,8 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
     animation->stop();
     animation->blockSignals(false);
     opacityEffect->setOpacity(1.0);
+
+    if(auto fps = decoder.getVideoFps(); fps == fps) //skips when picture as an input
     ui->vidProgWidget->setVisible(true);
     timer->start(g_timeOut);
 
@@ -263,6 +273,8 @@ void MainWindow::mouseMoveEvent(QMouseEvent *e)
     animation->stop();
     animation->blockSignals(false);
     opacityEffect->setOpacity(1.0);
+
+    if(auto fps = decoder.getVideoFps(); fps == fps) //skips when picture as an input
     ui->vidProgWidget->setVisible(true);
     timer->start(g_timeOut);
 
@@ -311,7 +323,7 @@ void MainWindow::on_playPauseButton_clicked()
 
 void MainWindow::on_actionAbout_this_app_triggered()
 {
-     QMessageBox::about(this, "About this app", "This is the first MSF's GUI app fully written in C++. This program demuxes and decodes the given video and allows to add watermark, onion skinning, change brightness and save particular frames.");
+     QMessageBox::about(this, "About this app", "Current version: 1.1\nCreated by: Kamil Janko\n\nThis program demuxes and decodes the given video and allows to add watermark, onion skinning, change brightness, manipulate RGB channels and save particular frames. Since version 1.1 it is also possible to open pictures.");
 }
 
 void MainWindow::on_actionwater_mark_triggered()
@@ -326,6 +338,7 @@ void MainWindow::on_actionbrightness_triggered()
     brightnessDialog.show();
 }
 
+// Not used anywhere because it uses too much energy to process the image in real time on the processor
 void MainWindow::rgb2Hsv(int type, int valueToAdd)
 {
     QElapsedTimer et;
@@ -530,10 +543,7 @@ void MainWindow::cutFileNameWithFormat()
 
 void MainWindow::hideInterface()
 {
-//    qDebug()<<"here";
     animation->start();
-//    ui->vidProgWidget->setVisible(false);
-//    update();
 }
 
 void MainWindow::setVideoTimeCode(double videoTime)
@@ -544,7 +554,6 @@ void MainWindow::setVideoTimeCode(double videoTime)
     minutes < 10 ? mMinutes = "0" + QString::number(minutes) : mMinutes = QString::number(minutes);
     mVideoCurrPos = mMinutes + ":" + mSeconds;
     ui->timelabel->setText(mVideoCurrPos);
-
 
     double videoRem = decoder.getVideoDuration() - videoTime;
     int rminutes = videoRem / 60;

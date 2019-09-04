@@ -9,7 +9,7 @@ InitialDialog::InitialDialog(QWidget *parent) :
 {
     setAcceptDrops(true);
     ui->setupUi(this);
-    ui->widgetFrames->hide(); //temp
+    ui->widgetFrames->hide();
     ui->widgetTimeCode->hide();
     ui->spinBoxFrames->setRange(0,500);
     ui->pushButton_advanced->setStyleSheet("background-color: transparent; border: none;");
@@ -65,7 +65,7 @@ void InitialDialog::setFileName(const QString &fileName)
     ui->lineEditVideoPath->setText(fileName);
 }
 
-void InitialDialog::on_pushButton_pressed() //do dopisania
+void InitialDialog::on_pushButton_pressed()
 {
     QString fileName = QFileDialog::getOpenFileName(this, "Open file");
     ui->lineEditVideoPath->setText(fileName);
@@ -95,7 +95,6 @@ void InitialDialog::on_pushButton_advanced_pressed()
 void InitialDialog::on_pushButton_cancel_clicked()
 {
     QDialog::reject();
-//    qApp->exit();
 }
 
 void InitialDialog::on_pushButton_import_clicked()
