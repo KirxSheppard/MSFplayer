@@ -55,9 +55,11 @@ public slots:
     void on_horizontalSlider_valueChanged(int value);
     void on_actionexit_triggered();    
 private slots:
+    void updateVidEffects();
     void on_actionSave_triggered();
     void on_playPauseButton_clicked();
     void on_actionAbout_this_app_triggered();
+
     void on_actionwater_mark_triggered();
 
     void on_actionbrightness_triggered();
@@ -69,6 +71,10 @@ private slots:
     void on_horizontalSlider_sliderReleased();
 
     void on_horizontalSlider_sliderMoved(int position);
+
+    void on_actionBlack_triggered();
+
+    void on_actionWhite_triggered();
 
 private:
     Ui::MainWindow *ui;
@@ -82,7 +88,7 @@ private:
     QImage m_imgGOps;
     QString mVideoInPutPath, mMsfLogoPath, mFileNameWithFormat, mFileOutPut, mFileName;
     bool ifExit, ifSave, ifPaused, ifWaterMark, ifBrightOpt, ifNewSlierValue, ifOnionSkinning, ifRedOpt, ifGreenOpt, ifBlueOpt, ifOnScreenPressed;
-    int height, width;
+//    int height, width;
     int mNumOfFrames = -1;
     int mNumOfExportFrames, mFrameSaveCounter;
     Decoder decoder;
@@ -92,6 +98,7 @@ private:
     QString mMinutes, mSeconds, mRemMinutes, mRemSeconds;
     QString mVideoCurrPos = "00:00";
     QString mRemVideoTime = "00:00";
+    QString mBgColor = "black";
 
     bool sliderPressed = false;
     bool initWindowWasUsed = false;

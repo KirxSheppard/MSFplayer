@@ -13,7 +13,7 @@ Decoder::Decoder()
 
 Decoder::~Decoder()
 {
-    av_frame_free(&frame); //cleaning but here it's lags entire program on exit
+    av_frame_free(&frame);
 }
 
 bool Decoder::getPacket()
@@ -366,11 +366,14 @@ bool Decoder::decodeFile(const QString &videoInPut)
    pkt = av_packet_alloc();
    frame = av_frame_alloc();
 
-   int64_t ts = stream->time_base.den * (mifUserSetNewValue ? userDesideredPos : desiredPos) / stream->time_base.num; //choose default or new slider
-   cerr << ts << endl;
-   if (av_seek_frame(fmtCtx, stream->index, ts, AVSEEK_FLAG_BACKWARD) >= 0)
+   if(desiredPos != 0.0)
    {
-       avcodec_flush_buffers(codexCtx);
+       int64_t ts = stream->time_base.den * (mifUserSetNewValue ? userDesideredPos : desiredPos) / stream->time_base.num; //choose default or new slider
+       cerr << ts << endl;
+       if (av_seek_frame(fmtCtx, stream->index, ts, AVSEEK_FLAG_BACKWARD) >= 0)
+       {
+           avcodec_flush_buffers(codexCtx);
+       }
    }
    return true;
 }

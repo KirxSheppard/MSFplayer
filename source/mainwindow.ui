@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>950</width>
-    <height>495</height>
+    <width>1280</width>
+    <height>720</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -130,8 +130,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>950</width>
-     <height>22</height>
+     <width>1280</width>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -156,8 +156,22 @@
     </property>
     <addaction name="actionAbout_this_app"/>
    </widget>
+   <widget class="QMenu" name="menuWindow">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <widget class="QMenu" name="menuBackground_color">
+     <property name="title">
+      <string>Background color</string>
+     </property>
+     <addaction name="actionBlack"/>
+     <addaction name="actionWhite"/>
+    </widget>
+    <addaction name="menuBackground_color"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
+   <addaction name="menuWindow"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -189,6 +203,16 @@
   <action name="actionwater_mark">
    <property name="text">
     <string>Water mark</string>
+   </property>
+  </action>
+  <action name="actionBlack">
+   <property name="text">
+    <string>Black</string>
+   </property>
+  </action>
+  <action name="actionWhite">
+   <property name="text">
+    <string>White</string>
    </property>
   </action>
  </widget>

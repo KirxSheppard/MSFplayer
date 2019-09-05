@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.10)
 ###############################################################################
 project(VideoDecodeFFMPEG)
 set(APPLICATION_NAME ${PROJECT_NAME})
-set(APPLICATION_VERSION "1.0.0")
+set(APPLICATION_VERSION "1.1.1")
 
 
 ###############################################################################

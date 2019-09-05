@@ -40,6 +40,7 @@ MainWindow::MainWindow(const QString msfLogo, QWidget *parent) :
     ui->labelRemainingTime->setStyleSheet("color: white");
     ui->labelRemainingTime->setText(mRemVideoTime);
 
+
     opacityEffect = new QGraphicsOpacityEffect;
     opacityEffect->setOpacity(1.0);
     ui->vidProgWidget->setGraphicsEffect(opacityEffect);
@@ -109,8 +110,9 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
     const QSize imgS =  m_imgGOps.size();
     QSize s = imgS.scaled(size(), Qt::KeepAspectRatio);
-
-    p.drawImage(QRect(QPoint(), s), m_imgGOps);
+    //background
+    p.fillRect(this->rect(), QColor(mBgColor));
+    p.drawImage(QRect(QPoint((width() - s.width()) / 2, 0), s), m_imgGOps);
 
 
     //On screen rect for play/pause button
@@ -119,8 +121,19 @@ void MainWindow::paintEvent(QPaintEvent *event)
                               s.width() / 2,
                               s.height() / 2);
 
-    //here it works fine without any weird glitches
+    //here it works fine without any weird glitches except Windows
+#ifndef Q_OS_WINDOWS
     this->resize(s.width(),s.height());
+#endif
+
+    if(auto fps = decoder.getVideoFps(); fps == fps)
+    {
+        ui->statusbar->showMessage(mFileNameWithFormat + " (" + QString::number(decoder.getVideoFps()) + "fps)");
+    }
+    else {
+        ui->vidProgWidget->hide();
+        ui->statusbar->showMessage(mFileNameWithFormat);
+    }
 }
 
 void MainWindow::setImage(const QImage &img)
@@ -137,45 +150,7 @@ void MainWindow::setImage(const QImage &img)
     if (m_imgGOps.size() != m_imgs[1].size() || m_imgGOps.format() != m_imgs[1].format())
         m_imgGOps = QImage(m_imgs[1].size(), m_imgs[1].format());
 
-    if(auto fps = decoder.getVideoFps(); fps == fps)
-    {
-        ui->statusbar->showMessage(mFileNameWithFormat + " (" + QString::number(decoder.getVideoFps()) + "fps)");
-    }
-    else {
-        ui->vidProgWidget->hide();
-        ui->statusbar->showMessage(mFileNameWithFormat);
-    }
-
-    QPainter painter(&m_imgGOps);
-
-    const QSize imgS =  m_imgGOps.size();
-
-    painter.drawImage(QRect(QPoint(), imgS), m_imgs[1]);
-
-    if (ifOnionSkinning)
-    {
-        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-        painter.setOpacity(0.3);
-        painter.drawImage(QRect(QPoint(), imgS), m_imgs[0]);
-    }
-    if(checkWaterMark() == true)
-    {
-        QImage waterMarkImg(mMsfLogoPath); //should be declared just once
-        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-        painter.setOpacity(0.4);
-        painter.drawImage(imgS.width() / 2 - waterMarkImg.width() / 2,  imgS.height() / 2 - waterMarkImg.height() / 2, waterMarkImg); //here i can control water mark position
-    }
-
-    painter.end();
-
-    update();
-
-    if (checkifSave())
-    {
-        int pos = mFileOutPut.lastIndexOf(".");
-        QString temp = mFileOutPut;
-        m_imgGOps.save(QString(temp.insert(pos,"_%1")).arg(mFrameSaveCounter, 6, 10, QLatin1Char('0')));
-    }
+    updateVidEffects();
 }
 
 void MainWindow::setSliderValue(int valueS)
@@ -201,7 +176,6 @@ bool MainWindow::checkifSave()
         QMessageBox::information(this, "Status inspector", "All images saved successfully!");
         mFrameSaveCounter = 0;
     }
-
     return true;
 }
 
@@ -236,7 +210,6 @@ void MainWindow::videoPlayer(QString videoPath, int numOfFram, double tc)
 
     if (mNumOfFrames == 0) mNumOfFrames = decoder.setDefaultFramNum();
     else decoder.setNumOfFrames(mNumOfFrames);
-
     ui->horizontalSlider->setRange(0, mNumOfFrames);
     decoder.start();
 }
@@ -291,6 +264,45 @@ void MainWindow::on_actionexit_triggered()
     close();
 }
 
+void MainWindow::updateVidEffects()
+{
+
+    QPainter painter(&m_imgGOps);
+
+    const QSize imgS =  m_imgGOps.size();
+
+    painter.drawImage(QRect(QPoint(), imgS), m_imgs[1]);
+
+    if (ifOnionSkinning)
+    {
+        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+        painter.setOpacity(0.3);
+        painter.drawImage(QRect(QPoint(), imgS), m_imgs[0]);
+    }
+    if(checkWaterMark() == true)
+    {
+        QImage waterMarkImg(mMsfLogoPath); //should be declared just once
+        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+        painter.setOpacity(0.4);
+        painter.drawImage(imgS.width() / 2 - waterMarkImg.width() / 2,  imgS.height() / 2 - waterMarkImg.height() / 2, waterMarkImg); //here i can control water mark position
+    }
+
+    painter.end();
+    update();
+
+    if (checkifSave())
+    {
+        int pos = mFileOutPut.lastIndexOf(".");
+        QString temp = mFileOutPut;
+        m_imgGOps.save(QString(temp.insert(pos,"_%1")).arg(mFrameSaveCounter, 6, 10, QLatin1Char('0')));
+        if(ifPaused)
+        {
+            ifPaused = false;
+            decoder.setPausedPlay();
+        }
+    }
+}
+
 void MainWindow::on_actionSave_triggered()
 {
     SaveFramesDialog saveNumFramesDialog;
@@ -304,6 +316,8 @@ void MainWindow::on_actionSave_triggered()
 
     mFileOutPut = saveNumFramesDialog.exportPath(mFileName);
     if(!mFileOutPut.isEmpty()) ifSave = true;
+    updateVidEffects();
+    update();
 }
 
 void MainWindow::on_playPauseButton_clicked()
@@ -323,12 +337,13 @@ void MainWindow::on_playPauseButton_clicked()
 
 void MainWindow::on_actionAbout_this_app_triggered()
 {
-     QMessageBox::about(this, "About this app", "Current version: 1.1\nCreated by: Kamil Janko\n\nThis program demuxes and decodes the given video and allows to add watermark, onion skinning, change brightness, manipulate RGB channels and save particular frames. Since version 1.1 it is also possible to open pictures.");
+     QMessageBox::about(this, "About this app", "Current version: 1.1.1\nCreated by: Kamil Janko\n\nThis program demuxes and decodes the given video and allows to add watermark, onion skinning, change brightness, manipulate RGB channels and save particular frames. Since version 1.1 it is also possible to open pictures.");
 }
 
 void MainWindow::on_actionwater_mark_triggered()
 {
     ifWaterMark = !ifWaterMark;
+    updateVidEffects();
     update();
 }
 
@@ -568,6 +583,7 @@ void MainWindow::setVideoTimeCode(double videoTime)
 void MainWindow::on_actiononion_skinning_triggered()
 {
     ifOnionSkinning = !ifOnionSkinning;
+    updateVidEffects();
 }
 
 void MainWindow::on_horizontalSlider_sliderPressed()
@@ -595,3 +611,14 @@ void MainWindow::on_horizontalSlider_sliderMoved(int position)
      decoder.setNewSliderValue(position);
 }
 
+void MainWindow::on_actionBlack_triggered()
+{
+    mBgColor = "black";
+    update();
+}
+
+void MainWindow::on_actionWhite_triggered()
+{
+    mBgColor = "white";
+    update();
+}
