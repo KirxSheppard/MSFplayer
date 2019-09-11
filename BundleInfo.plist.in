@@ -32,6 +32,10 @@
                 <string>rmvb</string>
                 <string>rm</string>
                 <string>bik</string>
+		<string>png</string>
+		<string>jpg</string>
+		<string>tiff</string>
+		<string>bmp</string>
             </array>
             <key>CFBundleTypeRole</key>
             <string>Viewer</string>

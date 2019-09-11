@@ -1,25 +1,30 @@
-#ifndef BRIGHTNESSDIALOG_HPP
-#define BRIGHTNESSDIALOG_HPP
+#ifndef INSPECTOR_HPP
+#define INSPECTOR_HPP
 
 #include <QDialog>
 #include <QDebug>
 #include <QPaintEvent>
 #include <QPainter>
+#include <QDragEnterEvent>
+#include <QMimeData>
 
 namespace Ui {
-class BrightnessDialog;
+class Inspector;
 }
 
-class BrightnessDialog : public QDialog
+class Inspector : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit BrightnessDialog(QWidget *parent = nullptr);
-    ~BrightnessDialog();
+    explicit Inspector(QWidget *parent = nullptr);
+    ~Inspector();
+    void resetWm2BigPic();
 
 protected:
-    void paintEvent(QPaintEvent *event);
+    void paintEvent(QPaintEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
+    void dragEnterEvent(QDragEnterEvent *e) override;
 
 signals:
     void ifBrightBool(bool mIfBright);
@@ -33,6 +38,13 @@ signals:
 
     void ifBlueChannel(bool mIrfBlue);
     void blueValue(int Value);
+
+    void wmOpacityValue(double value);
+    void wmPosX(int value);
+    void wmPosY(int value);
+    void wmResetPath(bool value);
+    void wmSetPressed(QString path);
+    void wmScaleValue(int value);
 
 private slots:
 
@@ -68,8 +80,28 @@ private slots:
 
     void on_checkBox_4_clicked();
 
+    void on_horizontalSlider_wm_opacity_sliderPressed();
+
+    void on_horizontalSlider_wm_opacity_sliderReleased();
+
+    void on_horizontalSlider_wm_opacity_valueChanged(int value);
+
+    void on_spinBox_X_valueChanged(int arg1);
+
+    void on_spinBox_Y_valueChanged(int arg1);
+
+    void on_pushButtonWmReset_clicked();
+
+    void on_pushButtonWmSet_clicked();
+
+    void on_horizontalSlider_wmSize_valueChanged(int value);
+
+    void on_horizontalSlider_wmSize_sliderPressed();
+
+    void on_horizontalSlider_wmSize_sliderReleased();
+
 private:
-    Ui::BrightnessDialog *ui;
+    Ui::Inspector *ui;
     QString brightOptTitle;
     QPalette sample_palette;
     bool mIfBright = false;
@@ -77,7 +109,7 @@ private:
     bool mIfGreen = false;
     bool mIfBlue = false;
     QString mFileWithFormat;
-
+    QString mFileName;
 };
 
-#endif // BRIGHTNESSDIALOG_HPP
+#endif // INSPECTOR_HPP

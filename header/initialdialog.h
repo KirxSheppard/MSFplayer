@@ -6,6 +6,7 @@
 #include <QMimeData>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QPainter>
 
 namespace Ui {
 class InitialDialog;
@@ -21,7 +22,7 @@ public:
 
     void dragEnterEvent(QDragEnterEvent *e) override;
     void dropEvent(QDropEvent *e) override;
-
+    void paintEvent(QPaintEvent *event) override;
     int numOfFrames() const;
     double initTimeCode() const;
     bool dialAccepted();

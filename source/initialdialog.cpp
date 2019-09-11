@@ -9,13 +9,19 @@ InitialDialog::InitialDialog(QWidget *parent) :
 {
     setAcceptDrops(true);
     ui->setupUi(this);
+    ui->groupBox->setStyleSheet("color: white");
+    ui->pushButton_cancel->setStyleSheet("background: gray; color: white");
+    ui->pushButton_import->setStyleSheet("background: gray; color: white");
+    ui->spinBoxFrames->setStyleSheet("background: gray");
+    ui->SpinBoxTimeCode->setStyleSheet("background: gray");
+    ui->lineEditVideoPath->setStyleSheet("background: gray");
+    ui->pushButton->setStyleSheet("background: gray");
     ui->widgetFrames->hide();
     ui->widgetTimeCode->hide();
     ui->spinBoxFrames->setRange(0,500);
     ui->pushButton_advanced->setStyleSheet("background-color: transparent; border: none;");
     ui->widgetAdvanced->setStyleSheet("font: italic;");
     resize(400,100);
-//    QDialog::setResult(2);
 }
 
 InitialDialog::~InitialDialog()
@@ -38,6 +44,22 @@ void InitialDialog::dropEvent(QDropEvent *e)
         QString fileName = url.toLocalFile();
         ui->lineEditVideoPath->setText(fileName);
     }
+}
+
+void InitialDialog::paintEvent(QPaintEvent *event)
+{
+    QPainter painter(this);
+
+    //background
+    painter.fillRect(this->rect(), QColor::fromRgb(20, 20, 20, 255));
+
+    //main background
+    QRadialGradient gradient(70, height() - 10, width(), width() - 10, 20);
+        gradient.setColorAt(1, QColor::fromRgbF(0.15, 0.15, 0.15, 1));
+        gradient.setColorAt(0, QColor::fromRgbF(0.3, 0.3, 0.3, 0.8));
+    painter.setBrush(gradient);
+    painter.setPen(Qt::NoPen);
+    painter.drawRoundedRect(5, 5, width() - 10, height() - 10, 5.0, 5.0);
 }
 
 int InitialDialog::numOfFrames() const
@@ -103,7 +125,6 @@ void InitialDialog::on_pushButton_import_clicked()
     {
         dialacp = true;
         QDialog::accept();
-        qDebug()<< result();
     }
     else
     {

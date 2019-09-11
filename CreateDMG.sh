@@ -1,8 +1,8 @@
 #!/bin/sh
 
-echo "Creating DMG for MSF Player 1.0.0"
+echo "Creating DMG for MSF Player 1.1.1"
 
-volname="MSF Player-macOS-1.0.0"
+volname="MSF Player-macOS-1.1.1"
 dmgname="$volname.dmg"
 bundlename="MSF Player.app"
 

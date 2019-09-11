@@ -65,10 +65,11 @@ MainWindow::MainWindow(const QString msfLogo, QWidget *parent) :
     ifBlueOpt = false;
     ifNewSlierValue = false;
     ifOnionSkinning =false;
-    ifOnScreenPressed = false;
+//    ifOnScreenPressed = false;
 
     mFrameSaveCounter = 0;
     mMsfLogoPath = msfLogo;
+    mWaterMarkPath = mMsfLogoPath;
 
     connect(timer, &QTimer::timeout, this, &MainWindow::hideInterface);
 
@@ -78,22 +79,36 @@ MainWindow::MainWindow(const QString msfLogo, QWidget *parent) :
             this, &MainWindow::setImage);
     connect(&decoder, &Decoder::positon,
             this, &MainWindow::setSliderValue);
-    connect(&brightnessDialog, &BrightnessDialog::ifBrightBool,
+    connect(&inspector, &Inspector::ifBrightBool,
             &decoder, &Decoder::setBrightState);
-    connect(&brightnessDialog, &BrightnessDialog::brightValue,
+    connect(&inspector, &Inspector::brightValue,
             &decoder, &Decoder::setBrightness);
-    connect(&brightnessDialog, &BrightnessDialog::ifRedChannel,
+    connect(&inspector, &Inspector::ifRedChannel,
             &decoder, &Decoder::setRedChannelState);
-    connect(&brightnessDialog, &BrightnessDialog::redValue,
+    connect(&inspector, &Inspector::redValue,
             &decoder, &Decoder::setRedChannel);
-    connect(&brightnessDialog, &BrightnessDialog::ifGreenChannel,
+    connect(&inspector, &Inspector::ifGreenChannel,
             &decoder, &Decoder::setGreenChannelState);
-    connect(&brightnessDialog, &BrightnessDialog::greenValue,
+    connect(&inspector, &Inspector::greenValue,
             &decoder, &Decoder::setGreenChannel);
-    connect(&brightnessDialog, &BrightnessDialog::ifBlueChannel,
+    connect(&inspector, &Inspector::ifBlueChannel,
             &decoder, &Decoder::setBlueChannelState);
-    connect(&brightnessDialog, &BrightnessDialog::blueValue,
+    connect(&inspector, &Inspector::blueValue,
             &decoder, &Decoder::setBlueChannel);
+    connect(&inspector, &Inspector::wmOpacityValue,
+            this, &MainWindow::setWmOpacityValue);
+    connect(&inspector, &Inspector::rejected,
+            this, &MainWindow::inspectorClosed);
+    connect(&inspector, &Inspector::wmPosX,
+            this, &MainWindow::setWmPosX);
+    connect(&inspector, &Inspector::wmPosY,
+            this, &MainWindow::setWmPosY);
+    connect(&inspector, &Inspector::wmSetPressed,
+            this, &MainWindow::setWmPath);
+    connect(&inspector, &Inspector::wmResetPath,
+            this, &MainWindow::resetWmPath);
+    connect(&inspector, &Inspector::wmScaleValue,
+            this, &MainWindow::setWmScaleValue);
 }
 
 MainWindow::~MainWindow()
@@ -110,10 +125,11 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
     const QSize imgS =  m_imgGOps.size();
     QSize s = imgS.scaled(size(), Qt::KeepAspectRatio);
+
     //background
     p.fillRect(this->rect(), QColor(mBgColor));
-    p.drawImage(QRect(QPoint((width() - s.width()) / 2, 0), s), m_imgGOps);
 
+    p.drawImage(QRect(QPoint((width() - s.width()) / 2, 0), s), m_imgGOps);
 
     //On screen rect for play/pause button
     onScreenPlayPause = QRect(s.width() / 4,
@@ -151,6 +167,49 @@ void MainWindow::setImage(const QImage &img)
         m_imgGOps = QImage(m_imgs[1].size(), m_imgs[1].format());
 
     updateVidEffects();
+}
+
+void MainWindow::setWmOpacityValue(double value)
+{
+    mWmOpacityVal = value;
+    updateVidEffects();
+}
+
+void MainWindow::setWmScaleValue(int value)
+{
+    mWmScale = value;
+    updateVidEffects();
+}
+
+void MainWindow::inspectorClosed()
+{
+    ui->actioninspector->setChecked(false);
+}
+
+void MainWindow::setWmPosX(int value)
+{
+    mWmPosX = value;
+    updateVidEffects();
+}
+
+void MainWindow::setWmPosY(int value)
+{
+    mWmPosY = value;
+    updateVidEffects();
+}
+
+void MainWindow::resetWmPath(bool value)
+{
+    if(value)
+    {
+        mWaterMarkPath = mMsfLogoPath;
+        updateVidEffects();
+    }
+}
+
+void MainWindow::setWmPath(QString path)
+{
+    mWaterMarkPath = path;
 }
 
 void MainWindow::setSliderValue(int valueS)
@@ -223,9 +282,8 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
     if(onScreenPlayPause.contains(event->pos()))
     {
         ifPaused = !ifPaused;
-        if(!ifPaused) ui->playPauseButton->setIcon(QIcon(":/resources/pause.png"));
-        else  ui->playPauseButton->setIcon(QIcon(":/resources/play.png"));
-        ifOnScreenPressed = true;
+        if(!ifPaused) ui->playPauseButton->setIcon(QIcon(mPauseIcon));
+        else  ui->playPauseButton->setIcon(QIcon(mPlayIcon));
         decoder.setPausedPlay();
     }
 
@@ -256,7 +314,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent *e)
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    brightnessDialog.close();
+    inspector.close();
 }
 
 void MainWindow::on_actionexit_triggered()
@@ -266,10 +324,9 @@ void MainWindow::on_actionexit_triggered()
 
 void MainWindow::updateVidEffects()
 {
-
     QPainter painter(&m_imgGOps);
 
-    const QSize imgS =  m_imgGOps.size();
+    const QSize imgS = m_imgGOps.size();
 
     painter.drawImage(QRect(QPoint(), imgS), m_imgs[1]);
 
@@ -279,27 +336,41 @@ void MainWindow::updateVidEffects()
         painter.setOpacity(0.3);
         painter.drawImage(QRect(QPoint(), imgS), m_imgs[0]);
     }
-    if(checkWaterMark() == true)
+    if(checkWaterMark())
     {
-        QImage waterMarkImg(mMsfLogoPath); //should be declared just once
+        QImage waterMarkImg(mWaterMarkPath);
         painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-        painter.setOpacity(0.4);
-        painter.drawImage(imgS.width() / 2 - waterMarkImg.width() / 2,  imgS.height() / 2 - waterMarkImg.height() / 2, waterMarkImg); //here i can control water mark position
+        painter.setOpacity(mWmOpacityVal);
+        if(waterMarkImg.height() > imgS.height())
+        {
+            inspector.resetWm2BigPic();
+            mWaterMarkPath = mMsfLogoPath;
+        }
+        else
+        {
+            //here i can control water mark position and scale
+            painter.drawImage(imgS.width()  / 2 - waterMarkImg.width()  * ((double)mWmScale / 100) / 2 + mWmPosX,
+                              imgS.height() / 2 - waterMarkImg.height() * ((double)mWmScale / 100) / 2 + mWmPosY,
+                              waterMarkImg.scaled(waterMarkImg.width()  * ((double)mWmScale / 100),
+                                                  waterMarkImg.height() * ((double)mWmScale / 100),
+                                                  Qt::KeepAspectRatio));
+        }
     }
-
     painter.end();
+    if(stopAfterUpdate)
+    {
+        stopAfterUpdate = false;
+        mPauseVidAfterUpdate();
+    }
     update();
 
     if (checkifSave())
     {
+        mPauseVidAfterUpdate();
         int pos = mFileOutPut.lastIndexOf(".");
         QString temp = mFileOutPut;
         m_imgGOps.save(QString(temp.insert(pos,"_%1")).arg(mFrameSaveCounter, 6, 10, QLatin1Char('0')));
-        if(ifPaused)
-        {
-            ifPaused = false;
-            decoder.setPausedPlay();
-        }
+        mPlayVidToUpdate();
     }
 }
 
@@ -307,7 +378,6 @@ void MainWindow::on_actionSave_triggered()
 {
     SaveFramesDialog saveNumFramesDialog;
     saveNumFramesDialog.setWindowTitle("Export settings");
-    saveNumFramesDialog.setFixedSize(400,120);
 
     if (saveNumFramesDialog.exec() == QDialog::Rejected)
         return;
@@ -324,12 +394,12 @@ void MainWindow::on_playPauseButton_clicked()
 {
     if(ifPaused == false)
     {
-        ui->playPauseButton->setIcon(QIcon(":/resources/play.png"));
+        ui->playPauseButton->setIcon(QIcon(mPlayIcon));
         ifPaused = true;
     }
     else
     {
-        ui->playPauseButton->setIcon(QIcon(":/resources/pause.png"));
+        ui->playPauseButton->setIcon(QIcon(mPauseIcon));
         ifPaused = false;
     }
     decoder.setPausedPlay();
@@ -347,10 +417,10 @@ void MainWindow::on_actionwater_mark_triggered()
     update();
 }
 
-void MainWindow::on_actionbrightness_triggered()
+void MainWindow::on_actioninspector_triggered()
 {
-    brightnessDialog.setWindowTitle("Color inspector");
-    brightnessDialog.show();
+    inspector.setWindowTitle("Inspector");
+    inspector.show();
 }
 
 // Not used anywhere because it uses too much energy to process the image in real time on the processor
@@ -549,11 +619,31 @@ void MainWindow::rgb2Hsv(int type, int valueToAdd)
     qDebug()<<et.nsecsElapsed() / 1e6 << "ms";
 }
 
+//Gets the video file name
 void MainWindow::cutFileNameWithFormat()
 {
-    //Gets the video file name
     int pos = mVideoInPutPath.length() - mVideoInPutPath.lastIndexOf('/') - 1;
     mFileNameWithFormat = mVideoInPutPath.right(pos);
+}
+
+void MainWindow::mPlayVidToUpdate()
+{
+    if(ifPaused)
+    {
+        ifPaused = false;
+//        ui->playPauseButton->setIcon(QIcon(mPauseIcon));
+        decoder.setPausedPlay();
+    }
+}
+
+void MainWindow::mPauseVidAfterUpdate()
+{
+    if(!ifPaused)
+    {
+        ifPaused = true;
+//        ui->playPauseButton->setIcon(QIcon(mPlayIcon));
+        decoder.setPausedPlay();
+    }
 }
 
 void MainWindow::hideInterface()
@@ -588,6 +678,11 @@ void MainWindow::on_actiononion_skinning_triggered()
 
 void MainWindow::on_horizontalSlider_sliderPressed()
 {
+    if(ifPaused)
+    {
+        mPlayVidToUpdate();
+        stopAfterUpdate = true;
+    }
     sliderPressed = true;
 }
 
@@ -621,4 +716,9 @@ void MainWindow::on_actionWhite_triggered()
 {
     mBgColor = "white";
     update();
+}
+
+void MainWindow::on_actioninspector_triggered(bool checked)
+{
+    if(!checked) inspector.close();
 }

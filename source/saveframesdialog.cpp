@@ -6,6 +6,10 @@ SaveFramesDialog::SaveFramesDialog(QWidget *parent) :
     ui(new Ui::SaveFramesDialog)
 {
     ui->setupUi(this);
+    ui->groupBox->setStyleSheet("color: white");
+    ui->spinBox->setStyleSheet("background: gray");
+    ui->buttonBox->setStyleSheet("background: gray; color: white");
+    ui->spinBox->setRange(0, 1000);
 }
 
 SaveFramesDialog::~SaveFramesDialog()
@@ -21,9 +25,18 @@ QString SaveFramesDialog::exportPath(QString fileName)
 
 void SaveFramesDialog::paintEvent(QPaintEvent *e)
 {
-//    QPainter painter(this);
+    QPainter painter(this);
+
     //background
-//    painter.fillRect(this->rect(),QColor::fromRgb(100, 100, 100, 255));
+    painter.fillRect(this->rect(), QColor::fromRgb(20, 20, 20, 255));
+
+    //main background
+    QRadialGradient gradient(70, height() - 10, width(), width() - 10, 20);
+        gradient.setColorAt(1, QColor::fromRgbF(0.15, 0.15, 0.15, 1));
+        gradient.setColorAt(0, QColor::fromRgbF(0.3, 0.3, 0.3, 0.8));
+    painter.setBrush(gradient);
+    painter.setPen(Qt::NoPen);
+    painter.drawRoundedRect(5, 5, width() - 10, height() - 10, 5.0, 5.0);
 }
 
 int SaveFramesDialog::numFramesToSave() const
