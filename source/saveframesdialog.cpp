@@ -1,5 +1,6 @@
 #include "saveframesdialog.hpp"
 #include "ui_saveframesdialog.h"
+#include <QDebug>
 
 SaveFramesDialog::SaveFramesDialog(QWidget *parent) :
     QDialog(parent),

@@ -76,6 +76,7 @@ signals:
 
 private:
     void adjustColor(int initPos, int step, int value);
+    void rgb2Hsv(int type, int valueToAdd);
 
 private:
     static QString videoInPut;

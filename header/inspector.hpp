@@ -1,7 +1,7 @@
 #ifndef INSPECTOR_HPP
 #define INSPECTOR_HPP
 
-#include <QDialog>
+#include <QWidget>
 #include <QDebug>
 #include <QPaintEvent>
 #include <QPainter>
@@ -12,7 +12,7 @@ namespace Ui {
 class Inspector;
 }
 
-class Inspector : public QDialog
+class Inspector : public QWidget
 {
     Q_OBJECT
 
@@ -48,11 +48,11 @@ signals:
 
 private slots:
 
-    void on_horizontalSlider_sliderPressed();
+    void on_horizontalSlider_Br_sliderPressed();
 
-    void on_horizontalSlider_sliderReleased();
+    void on_horizontalSlider_Br_sliderReleased();
 
-    void on_horizontalSlider_valueChanged(int value);
+    void on_horizontalSlider_Br_valueChanged(int value);
 
     void on_horizontalSlider_R_valueChanged(int value);
 

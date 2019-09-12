@@ -7,6 +7,7 @@
 #include <QMutex>
 #include "slider.hpp"
 #include "decoder.hpp"
+#include "videowidget.h"
 #include "inspector.hpp"
 #include "saveframesdialog.hpp"
 #include "initialdialog.h"
@@ -32,11 +33,10 @@ public:
     int setFrame();
     bool checkifSave();
     bool checkIfPaused();
-    bool checkWaterMark();
     bool checkIfNewSliderValue();
     bool checkIfInitAborded();
 
-    void videoPlayer(QString videoPath, int numOfFram, double tc);
+    void videoPlayerInit(QString videoPath, int numOfFram, double tc);
     void paintEvent(QPaintEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
@@ -50,27 +50,20 @@ public:
     //Slots
     void setVideoTimeCode(double videoTime);
     void setSliderValue(int valueS);
-    void setImage(const QImage &img);
-    void setWmOpacityValue(double value);
-    void setWmScaleValue(int value);
     void inspectorClosed();
-    void setWmPosX(int value);
-    void setWmPosY(int value);
-    void resetWmPath(bool value);
-    void setWmPath(QString path);
+    void setVidSize(QSize val);
+    void afterUpdateFrameIfPaused();
 public slots:
     void hideInterface();
     void on_horizontalSlider_valueChanged(int value);
     void on_actionexit_triggered();    
 private slots:
-    void updateVidEffects();
+    void mSaveFrame();
     void on_actionSave_triggered();
     void on_playPauseButton_clicked();
     void on_actionAbout_this_app_triggered();
 
     void on_actionwater_mark_triggered();
-
-    void on_actioninspector_triggered();
 
     void on_actiononion_skinning_triggered();
 
@@ -84,20 +77,22 @@ private slots:
 
     void on_actionWhite_triggered();
 
+    void on_actioninspector_triggered();
+
     void on_actioninspector_triggered(bool checked);
 
 private:
     Ui::MainWindow *ui;
     QPropertyAnimation  *animation;
     QGraphicsOpacityEffect *opacityEffect;
-    Inspector inspector;
     InitialDialog initDialog;
+    VideoWidget *vidWidget;
 
     Slider slider;
     QList<QImage> m_imgs;
     QImage m_imgGOps;
     QString mVideoInPutPath, mMsfLogoPath, mWaterMarkPath, mFileNameWithFormat, mFileOutPut, mFileName;
-    bool ifExit, ifSave, ifPaused, ifWaterMark, ifBrightOpt, ifNewSlierValue, ifOnionSkinning, ifRedOpt, ifGreenOpt, ifBlueOpt, ifOnScreenPressed;
+    bool ifExit, ifSave, ifPaused, ifNewSlierValue;
     int mNumOfFrames = -1;
     int mNumOfExportFrames, mFrameSaveCounter;
     Decoder decoder;
@@ -113,11 +108,13 @@ private:
     QString mBgColor = "black";
     QString mPauseIcon = ":/resources/pause.png";
     QString mPlayIcon = ":/resources/play.png";
+    QSize s;
 
     bool sliderPressed = false;
     bool initWindowWasUsed = false;
     bool initAborted = false;
     bool stopAfterUpdate = false;
+    bool stopAfterSaving = false;
 
     QRect onScreenPlayPause;
     QTimer *timer;

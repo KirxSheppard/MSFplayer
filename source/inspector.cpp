@@ -3,10 +3,9 @@
 #include <QBrush>
 
 Inspector::Inspector(QWidget *parent) :
-    QDialog(parent),
+    QWidget(parent),
     ui(new Ui::Inspector)
 {
-//    this->setWindowFlags(Qt::WindowStaysOnTopHint);
     ui->setupUi(this);
     setAcceptDrops(true);
     ui->groupBoxColor->setStyleSheet("color: white");
@@ -40,8 +39,8 @@ void Inspector::resetWm2BigPic()
 {
     ui->label_2BigPic->setText("The image you are trying to use is too big.\nScale it down first and try again.");
     ui->widgetInfo->show();
-    ui->lineEditWmPath->setText("");
-    mFileName = "";
+    ui->lineEditWmPath->clear();
+    mFileName.clear();
     emit wmResetPath(true);
 }
 
@@ -81,7 +80,7 @@ void Inspector::dropEvent(QDropEvent *event)
     }
 }
 
-void Inspector::on_horizontalSlider_valueChanged(int value)
+void Inspector::on_horizontalSlider_Br_valueChanged(int value)
 {
     emit brightValue(value);
     QString temp = "Value: " + QString::number(value);
@@ -154,14 +153,14 @@ void Inspector::on_horizontalSlider_wmSize_valueChanged(int value)
     emit wmScaleValue(value);
 }
 
-void Inspector::on_horizontalSlider_sliderPressed()
+void Inspector::on_horizontalSlider_Br_sliderPressed()
 {
-    ui->horizontalSlider->setCursor(Qt::ClosedHandCursor);
+    ui->horizontalSlider_Br->setCursor(Qt::ClosedHandCursor);
 }
 
-void Inspector::on_horizontalSlider_sliderReleased()
+void Inspector::on_horizontalSlider_Br_sliderReleased()
 {
-    ui->horizontalSlider->setCursor(Qt::OpenHandCursor);
+    ui->horizontalSlider_Br->setCursor(Qt::OpenHandCursor);
 }
 
 void Inspector::on_horizontalSlider_R_sliderPressed()
@@ -227,15 +226,14 @@ void Inspector::on_spinBox_Y_valueChanged(int arg1)
 void Inspector::on_pushButtonWmReset_clicked()
 {
     ui->widgetInfo->hide();
-    ui->lineEditWmPath->setText("");
-    mFileName = "";
+    ui->lineEditWmPath->clear();
+    mFileName.clear();
     emit wmResetPath(true);
 }
 
 void Inspector::on_pushButtonWmSet_clicked()
 {
 //    ui->widgetInfo->hide();
-
     if(!mFileName.isEmpty())
     emit wmSetPressed(mFileName);
 }

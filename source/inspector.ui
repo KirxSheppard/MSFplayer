@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>Inspector</class>
- <widget class="QDialog" name="Inspector">
+ <widget class="QWidget" name="Inspector">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -9,6 +9,12 @@
     <width>320</width>
     <height>570</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
@@ -84,7 +90,7 @@
               </widget>
              </item>
              <item>
-              <widget class="Slider" name="horizontalSlider">
+              <widget class="Slider" name="horizontalSlider_Br">
                <property name="cursor">
                 <cursorShape>OpenHandCursor</cursorShape>
                </property>
@@ -96,6 +102,12 @@
                </property>
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="tickPosition">
+                <enum>QSlider::TicksBelow</enum>
+               </property>
+               <property name="tickInterval">
+                <number>20</number>
                </property>
               </widget>
              </item>
@@ -177,6 +189,12 @@
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
                </property>
+               <property name="tickPosition">
+                <enum>QSlider::TicksBelow</enum>
+               </property>
+               <property name="tickInterval">
+                <number>20</number>
+               </property>
               </widget>
              </item>
             </layout>
@@ -254,6 +272,12 @@
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
                </property>
+               <property name="tickPosition">
+                <enum>QSlider::TicksBelow</enum>
+               </property>
+               <property name="tickInterval">
+                <number>20</number>
+               </property>
               </widget>
              </item>
             </layout>
@@ -328,6 +352,12 @@
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
                </property>
+               <property name="tickPosition">
+                <enum>QSlider::TicksBelow</enum>
+               </property>
+               <property name="tickInterval">
+                <number>20</number>
+               </property>
               </widget>
              </item>
             </layout>
@@ -346,7 +376,7 @@
       <item>
        <widget class="QGroupBox" name="groupBoxWaterMark">
         <property name="title">
-         <string>Water mark</string>
+         <string>Watermark</string>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_5">
          <item>
@@ -371,6 +401,12 @@
              </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="tickPosition">
+              <enum>QSlider::TicksBelow</enum>
+             </property>
+             <property name="tickInterval">
+              <number>100</number>
              </property>
             </widget>
            </item>
@@ -432,6 +468,12 @@
              </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="tickPosition">
+              <enum>QSlider::TicksBelow</enum>
+             </property>
+             <property name="tickInterval">
+              <number>10</number>
              </property>
             </widget>
            </item>

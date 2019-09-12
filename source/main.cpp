@@ -52,6 +52,7 @@ int main(int argc, char *argv[])
    if (argc > 1)
        initDial.setFileName(argv[1]);
 
+   initDial.setFileName("/Users/kamil/Desktop/Target Earth - Festiwal.mp4");//temp
    if (initDial.exec() == QDialog::Accepted)
    {
         videoInPutPath = initDial.getInputFilePath();
@@ -62,7 +63,7 @@ int main(int argc, char *argv[])
 
    MainWindow w(msfLogo);
    w.setWindowTitle("MSF Player");
-   w.videoPlayer(videoInPutPath, numOfFrames, startFromTimeCode);
+   w.videoPlayerInit(videoInPutPath, numOfFrames, startFromTimeCode);
    w.show();
 
    return a.exec();
