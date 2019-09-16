@@ -15,6 +15,29 @@ MainWindow::MainWindow(const QString msfLogo, QWidget *parent) :
 {
     ui->setupUi(this);
     ui->widgetInspector->hide();
+
+    //Exit fullscreen shortcut
+    auto act = new QAction(this);
+    act->setShortcut(QKeySequence("Esc"));
+    connect(act, &QAction::triggered,
+            this, [this] {
+        if (isFullScreen())
+            showNormal();
+    });
+    addAction(act);
+
+    //Fullscreen shortcut
+    auto act2 = new QAction(this);
+    act2->setShortcut(QKeySequence::FullScreen);
+    connect(act2, &QAction::triggered,
+            this, [this] {
+        if (!isFullScreen())
+        {
+            showFullScreen();
+        }
+    });
+    addAction(act2);
+
     timer = new QTimer(this);
     timer->setSingleShot(true);
     timer->start(g_timeOut);
@@ -106,6 +129,8 @@ MainWindow::MainWindow(const QString msfLogo, QWidget *parent) :
             vidWidget, &VideoWidget::setWmScaleValue);
     connect(vidWidget, &VideoWidget::clearWmPath,
             ui->widgetInspector, &Inspector::resetWm2BigPic);
+    connect(ui->widgetInspector, &Inspector::osOpacityValue,
+            vidWidget, &VideoWidget::setOsOpacityValue);
     connect(vidWidget, &VideoWidget::afterUpdateIfPaused,
             this, &MainWindow::afterUpdateFrameIfPaused);
     connect(vidWidget, &VideoWidget::checkIfSaving,
@@ -134,19 +159,19 @@ void MainWindow::paintEvent(QPaintEvent *event)
     p.drawImage(QRect(QPoint((width() - s.width()) / 2, 0), s), m_imgGOps);
 
     //On screen rect for play/pause button
-    onScreenPlayPause = QRect(s.width() / 4,
-                              s.height() / 4,
-                              s.width() / 2,
-                              s.height() / 2);
+    onScreenPlayPause = QRect(ui->widgetVideo->width() / 4,
+                              ui->widgetVideo->height() / 4,
+                              ui->widgetVideo->width() / 2,
+                              ui->widgetVideo->height() / 2);
 
-    //here it works fine without any weird glitches except Windows (not anymore, needs some work)
+    //here it works fine without any weird glitches except Windows (not anymore, needs some work since version 1.2.0)
 #ifndef Q_OS_WINDOWS
 //    this->resize(s.width(),s.height());
 #endif
 
     if(auto fps = decoder.getVideoFps(); fps == fps)
     {
-//        ui->statusbar->showMessage(mFileNameWithFormat + " (" + QString::number(decoder.getVideoFps()) + "fps)");
+//        ui->statusbar->showMessage(mFileNameWithFormat + " (" + QString::number(decoder.getVideoFps()) + "fps)"); //optional if we want to include that info below the video progress slider
         setWindowTitle(mFileNameWithFormat + " (" + QString::number(decoder.getVideoFps()) + "fps)");
     }
     else {
@@ -335,10 +360,6 @@ void MainWindow::on_actionwater_mark_triggered()
 void MainWindow::on_actioninspector_triggered()
 {
     ui->widgetInspector->show();
-
-    //OLD
-//    inspector.setWindowTitle("Inspector");
-//    inspector.show();
 }
 
 //Gets the video file name
@@ -412,7 +433,10 @@ void MainWindow::on_horizontalSlider_valueChanged(int value)
     if(sliderPressed)
     {
         decoder.setNewSliderValue(value);
-        sliderPressed = false;
+        animation->blockSignals(true);
+        animation->stop();
+        animation->blockSignals(false);
+        opacityEffect->setOpacity(1.0);
     }
 }
 
@@ -436,6 +460,12 @@ void MainWindow::on_actionBlack_triggered()
 void MainWindow::on_actionWhite_triggered()
 {
     mBgColor = "white";
+    update();
+}
+
+void MainWindow::on_actionGray_triggered()
+{
+    mBgColor = "gray";
     update();
 }
 

@@ -68,7 +68,7 @@ void Decoder::scrollVideo()
     if(mifUserSetNewValue)
     {
         int64_t ts = stream->time_base.den * userDesideredPos / stream->time_base.num;
-        cerr <<"ts: " <<ts << endl;
+//        cerr <<"ts: " <<ts << endl;
         if (av_seek_frame(fmtCtx, stream->index, ts, AVSEEK_FLAG_BACKWARD) >= 0)
         {
             avcodec_flush_buffers(codexCtx);
@@ -252,7 +252,6 @@ void Decoder::playerSleepThread()
 //Uses sws_scale for conversion for current frame
 QImage Decoder::imgToRGB()
 {
-//        if (qImgs[i].format())
         qImg = QImage(frame->width, frame->height, QImage::Format_ARGB32);
 
         uint8_t *dstData[] {
@@ -446,7 +445,7 @@ void Decoder::adjustColor(int initPos, int step, int value)
         t.waitForFinished();
 }
 
-// Not used anywhere because it uses too much energy to process the image in real time on the processor
+// Not used anywhere because it uses too much energy to process the image in real time on the processor, will be added to the next releases.
 void Decoder::rgb2Hsv(int type, int valueToAdd)
 {
     QElapsedTimer et;

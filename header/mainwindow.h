@@ -81,6 +81,8 @@ private slots:
 
     void on_actioninspector_triggered(bool checked);
 
+    void on_actionGray_triggered();
+
 private:
     Ui::MainWindow *ui;
     QPropertyAnimation  *animation;

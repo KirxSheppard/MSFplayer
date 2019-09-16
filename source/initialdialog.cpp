@@ -90,7 +90,8 @@ void InitialDialog::setFileName(const QString &fileName)
 void InitialDialog::on_pushButton_pressed()
 {
     QString fileName = QFileDialog::getOpenFileName(this, "Open file");
-    ui->lineEditVideoPath->setText(fileName);
+    if (!fileName.isEmpty())
+        ui->lineEditVideoPath->setText(fileName);
 }
 
 void InitialDialog::on_pushButton_advanced_pressed()

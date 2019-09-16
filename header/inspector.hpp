@@ -1,7 +1,7 @@
 #ifndef INSPECTOR_HPP
 #define INSPECTOR_HPP
 
-#include <QWidget>
+#include <QScrollArea>
 #include <QDebug>
 #include <QPaintEvent>
 #include <QPainter>
@@ -19,12 +19,15 @@ class Inspector : public QWidget
 public:
     explicit Inspector(QWidget *parent = nullptr);
     ~Inspector();
+
     void resetWm2BigPic();
 
 protected:
     void paintEvent(QPaintEvent *event) override;
     void dropEvent(QDropEvent *event) override;
     void dragEnterEvent(QDragEnterEvent *e) override;
+
+    bool eventFilter(QObject *obj, QEvent *event) override;
 
 signals:
     void ifBrightBool(bool mIfBright);
@@ -45,6 +48,8 @@ signals:
     void wmResetPath(bool value);
     void wmSetPressed(QString path);
     void wmScaleValue(int value);
+
+    void osOpacityValue(double value);
 
 private slots:
 
@@ -86,10 +91,6 @@ private slots:
 
     void on_horizontalSlider_wm_opacity_valueChanged(int value);
 
-    void on_spinBox_X_valueChanged(int arg1);
-
-    void on_spinBox_Y_valueChanged(int arg1);
-
     void on_pushButtonWmReset_clicked();
 
     void on_pushButtonWmSet_clicked();
@@ -99,6 +100,15 @@ private slots:
     void on_horizontalSlider_wmSize_sliderPressed();
 
     void on_horizontalSlider_wmSize_sliderReleased();
+
+    void on_horizontalSliderOsOpacity_valueChanged(int value);
+
+    void on_horizontalSliderOsOpacity_sliderPressed();
+
+    void on_horizontalSliderOsOpacity_sliderReleased();
+
+    void on_spinBox_X_editingFinished();
+    void on_spinBox_Y_editingFinished();
 
 private:
     Ui::Inspector *ui;

@@ -27,6 +27,7 @@ public:
     void setImage(const QImage &img);
     void setWmOpacityValue(double value);
     void setWmScaleValue(int value);
+    void setOsOpacityValue(double value);
 
 
 public slots:
@@ -47,6 +48,7 @@ private:
     int mWmPosX = 0, mWmPosY = 0;
     int mWmScale = 100;
     double mWmOpacityVal = 0.3;
+    double mOsOpacityVal = 0.3;
 
 };
 

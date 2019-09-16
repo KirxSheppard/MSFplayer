@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
    MyApplication a(argc, argv);
 
 #ifndef Q_OS_WINDOWS
-    a.setStyle("Fusion");
+   a.setStyle("Fusion");
 #endif
 
    InitialDialog initDial;
@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
    if (argc > 1)
        initDial.setFileName(argv[1]);
 
-   initDial.setFileName("/Users/kamil/Desktop/Target Earth - Festiwal.mp4");//temp
+//   initDial.setFileName("/Users/kamil/Desktop/Target Earth - Festiwal.mp4");//temp
    if (initDial.exec() == QDialog::Accepted)
    {
         videoInPutPath = initDial.getInputFilePath();

@@ -6,589 +6,730 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>320</width>
-    <height>570</height>
+    <width>291</width>
+    <height>389</height>
    </rect>
   </property>
-  <property name="sizePolicy">
-   <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-    <horstretch>0</horstretch>
-    <verstretch>0</verstretch>
-   </sizepolicy>
-  </property>
-  <property name="windowTitle">
-   <string>Dialog</string>
-  </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2">
-   <item>
-    <widget class="QWidget" name="widgetColor" native="true">
-     <layout class="QVBoxLayout" name="verticalLayout_6">
-      <item>
-       <widget class="QGroupBox" name="groupBoxColor">
-        <property name="title">
-         <string>Color</string>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_3">
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout">
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_desc">
-             <item>
-              <widget class="QCheckBox" name="checkBox">
-               <property name="text">
-                <string/>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_5">
-               <property name="text">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#FFFFFF;&quot;&gt;Brightness&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout">
-             <item>
-              <widget class="QLabel" name="label_bright">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-                 <horstretch>20</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>75</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="baseSize">
-                <size>
-                 <width>0</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#ffffff;&quot;&gt;Value: 0&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="Slider" name="horizontalSlider_Br">
-               <property name="cursor">
-                <cursorShape>OpenHandCursor</cursorShape>
-               </property>
-               <property name="minimum">
-                <number>-255</number>
-               </property>
-               <property name="maximum">
-                <number>255</number>
-               </property>
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="tickPosition">
-                <enum>QSlider::TicksBelow</enum>
-               </property>
-               <property name="tickInterval">
-                <number>20</number>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <widget class="Line" name="line">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_5">
-             <item>
-              <widget class="QCheckBox" name="checkBox_2">
-               <property name="text">
-                <string/>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_7">
-               <property name="text">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#FFFFFF;&quot;&gt;Red intensity&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_2">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_2">
-             <item>
-              <widget class="QLabel" name="label_2">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>75</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">color: rgb(255, 255, 255);</string>
-               </property>
-               <property name="text">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#FFFFFF;&quot;&gt;Value: 0&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="Slider" name="horizontalSlider_R">
-               <property name="cursor">
-                <cursorShape>OpenHandCursor</cursorShape>
-               </property>
-               <property name="minimum">
-                <number>-255</number>
-               </property>
-               <property name="maximum">
-                <number>255</number>
-               </property>
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="tickPosition">
-                <enum>QSlider::TicksBelow</enum>
-               </property>
-               <property name="tickInterval">
-                <number>20</number>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <widget class="Line" name="line_2">
-             <property name="lineWidth">
-              <number>1</number>
-             </property>
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_6">
-             <item>
-              <widget class="QCheckBox" name="checkBox_3">
-               <property name="text">
-                <string/>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_8">
-               <property name="text">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#FFFFFF;&quot;&gt;Green intensity&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_3">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_3">
-             <item>
-              <widget class="QLabel" name="label_3">
-               <property name="minimumSize">
-                <size>
-                 <width>75</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">color: rgb(255, 255, 255);</string>
-               </property>
-               <property name="text">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot;  color:#FFFFFF;&quot;&gt;Value: 0&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="Slider" name="horizontalSlider_G">
-               <property name="cursor">
-                <cursorShape>OpenHandCursor</cursorShape>
-               </property>
-               <property name="minimum">
-                <number>-255</number>
-               </property>
-               <property name="maximum">
-                <number>255</number>
-               </property>
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="tickPosition">
-                <enum>QSlider::TicksBelow</enum>
-               </property>
-               <property name="tickInterval">
-                <number>20</number>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <widget class="Line" name="line_3">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_7">
-             <item>
-              <widget class="QCheckBox" name="checkBox_4">
-               <property name="text">
-                <string/>
-               </property>
-              </widget>
-             </item>
-             <item alignment="Qt::AlignVCenter">
-              <widget class="QLabel" name="label_9">
-               <property name="text">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot;  color:#FFFFFF;&quot;&gt;Blue intensity&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_4">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_4">
-             <item>
-              <widget class="QLabel" name="label_4">
-               <property name="minimumSize">
-                <size>
-                 <width>75</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">color: rgb(255, 255, 255);</string>
-               </property>
-               <property name="text">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#FFFFFF;&quot;&gt;Value: 0&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="Slider" name="horizontalSlider_B">
-               <property name="cursor">
-                <cursorShape>OpenHandCursor</cursorShape>
-               </property>
-               <property name="minimum">
-                <number>-255</number>
-               </property>
-               <property name="maximum">
-                <number>255</number>
-               </property>
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="tickPosition">
-                <enum>QSlider::TicksBelow</enum>
-               </property>
-               <property name="tickInterval">
-                <number>20</number>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QWidget" name="widgetWaterMark" native="true">
-     <layout class="QVBoxLayout" name="verticalLayout_4">
-      <item>
-       <widget class="QGroupBox" name="groupBoxWaterMark">
-        <property name="title">
-         <string>Watermark</string>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_5">
-         <item>
-          <layout class="QGridLayout" name="gridLayout_4">
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_wm_opacity">
-             <property name="text">
-              <string>Opacity</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QSlider" name="horizontalSlider_wmSize">
-             <property name="cursor">
-              <cursorShape>OpenHandCursor</cursorShape>
-             </property>
-             <property name="maximum">
-              <number>400</number>
-             </property>
-             <property name="value">
-              <number>100</number>
-             </property>
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="tickPosition">
-              <enum>QSlider::TicksBelow</enum>
-             </property>
-             <property name="tickInterval">
-              <number>100</number>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="label_size">
-             <property name="text">
-              <string>Scale</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="2">
-            <widget class="QLabel" name="label_wm_opacityvalue">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-               <horstretch>40</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>40</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>30%</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="2">
-            <widget class="QLabel" name="label_wmSizeValue">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-               <horstretch>40</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>40</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>100%</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QSlider" name="horizontalSlider_wm_opacity">
-             <property name="cursor">
-              <cursorShape>OpenHandCursor</cursorShape>
-             </property>
-             <property name="maximum">
-              <number>100</number>
-             </property>
-             <property name="sliderPosition">
-              <number>30</number>
-             </property>
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="tickPosition">
-              <enum>QSlider::TicksBelow</enum>
-             </property>
-             <property name="tickInterval">
-              <number>10</number>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_position">
-           <item>
-            <widget class="QLabel" name="labelPositonTitle">
-             <property name="text">
-              <string>Position</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="horizontalSpacer_5">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_X">
-             <property name="text">
-              <string>X</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QSpinBox" name="spinBox_X"/>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_Y">
-             <property name="text">
-              <string>Y</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QSpinBox" name="spinBox_Y"/>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="Line" name="line_4">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_8">
-           <item>
-            <widget class="QLabel" name="label">
-             <property name="text">
-              <string>Path</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLineEdit" name="lineEditWmPath"/>
-           </item>
-           <item>
-            <widget class="QPushButton" name="pushButtonWmSet">
-             <property name="text">
-              <string>Set</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QPushButton" name="pushButtonWmReset">
-           <property name="text">
-            <string>Reset</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QWidget" name="widgetInfo" native="true">
-        <layout class="QVBoxLayout" name="verticalLayout_7">
-         <item>
-          <widget class="QLabel" name="label_2BigPic">
-           <property name="text">
-            <string>Info Label</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
+  <layout class="QGridLayout" name="gridLayout_2">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>5</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>5</number>
+   </property>
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <item row="0" column="0">
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
      </property>
-    </spacer>
+     <property name="verticalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOn</enum>
+     </property>
+     <property name="sizeAdjustPolicy">
+      <enum>QAbstractScrollArea::AdjustToContents</enum>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>277</width>
+        <height>652</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <item row="0" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_10">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QWidget" name="widgetColor" native="true">
+           <layout class="QVBoxLayout" name="verticalLayout_6">
+            <item>
+             <widget class="QGroupBox" name="groupBoxColor">
+              <property name="title">
+               <string>Color</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_3">
+               <item>
+                <layout class="QVBoxLayout" name="verticalLayout">
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_desc">
+                   <item>
+                    <widget class="QCheckBox" name="checkBox">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="label_5">
+                     <property name="text">
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#FFFFFF;&quot;&gt;Brightness&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <spacer name="horizontalSpacer">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout">
+                   <item>
+                    <widget class="QLabel" name="label_bright">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                       <horstretch>20</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="minimumSize">
+                      <size>
+                       <width>75</width>
+                       <height>0</height>
+                      </size>
+                     </property>
+                     <property name="baseSize">
+                      <size>
+                       <width>0</width>
+                       <height>0</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#ffffff;&quot;&gt;Value: 0&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="Slider" name="horizontalSlider_Br">
+                     <property name="cursor">
+                      <cursorShape>OpenHandCursor</cursorShape>
+                     </property>
+                     <property name="minimum">
+                      <number>-255</number>
+                     </property>
+                     <property name="maximum">
+                      <number>255</number>
+                     </property>
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="tickPosition">
+                      <enum>QSlider::TicksBelow</enum>
+                     </property>
+                     <property name="tickInterval">
+                      <number>51</number>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <widget class="Line" name="line">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_5">
+                   <item>
+                    <widget class="QCheckBox" name="checkBox_2">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="label_7">
+                     <property name="text">
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#FFFFFF;&quot;&gt;Red intensity&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <spacer name="horizontalSpacer_2">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_2">
+                   <item>
+                    <widget class="QLabel" name="label_2">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="minimumSize">
+                      <size>
+                       <width>75</width>
+                       <height>0</height>
+                      </size>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">color: rgb(255, 255, 255);</string>
+                     </property>
+                     <property name="text">
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#FFFFFF;&quot;&gt;Value: 0&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="Slider" name="horizontalSlider_R">
+                     <property name="cursor">
+                      <cursorShape>OpenHandCursor</cursorShape>
+                     </property>
+                     <property name="minimum">
+                      <number>-255</number>
+                     </property>
+                     <property name="maximum">
+                      <number>255</number>
+                     </property>
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="tickPosition">
+                      <enum>QSlider::TicksBelow</enum>
+                     </property>
+                     <property name="tickInterval">
+                      <number>51</number>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <widget class="Line" name="line_2">
+                   <property name="lineWidth">
+                    <number>1</number>
+                   </property>
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_6">
+                   <item>
+                    <widget class="QCheckBox" name="checkBox_3">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="label_8">
+                     <property name="text">
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#FFFFFF;&quot;&gt;Green intensity&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <spacer name="horizontalSpacer_3">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_3">
+                   <item>
+                    <widget class="QLabel" name="label_3">
+                     <property name="minimumSize">
+                      <size>
+                       <width>75</width>
+                       <height>0</height>
+                      </size>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">color: rgb(255, 255, 255);</string>
+                     </property>
+                     <property name="text">
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot;  color:#FFFFFF;&quot;&gt;Value: 0&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="Slider" name="horizontalSlider_G">
+                     <property name="cursor">
+                      <cursorShape>OpenHandCursor</cursorShape>
+                     </property>
+                     <property name="minimum">
+                      <number>-255</number>
+                     </property>
+                     <property name="maximum">
+                      <number>255</number>
+                     </property>
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="tickPosition">
+                      <enum>QSlider::TicksBelow</enum>
+                     </property>
+                     <property name="tickInterval">
+                      <number>51</number>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <widget class="Line" name="line_3">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_7">
+                   <item>
+                    <widget class="QCheckBox" name="checkBox_4">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item alignment="Qt::AlignVCenter">
+                    <widget class="QLabel" name="label_9">
+                     <property name="text">
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot;  color:#FFFFFF;&quot;&gt;Blue intensity&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <spacer name="horizontalSpacer_4">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_4">
+                   <item>
+                    <widget class="QLabel" name="label_4">
+                     <property name="minimumSize">
+                      <size>
+                       <width>75</width>
+                       <height>0</height>
+                      </size>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">color: rgb(255, 255, 255);</string>
+                     </property>
+                     <property name="text">
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#FFFFFF;&quot;&gt;Value: 0&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="Slider" name="horizontalSlider_B">
+                     <property name="cursor">
+                      <cursorShape>OpenHandCursor</cursorShape>
+                     </property>
+                     <property name="focusPolicy">
+                      <enum>Qt::StrongFocus</enum>
+                     </property>
+                     <property name="minimum">
+                      <number>-255</number>
+                     </property>
+                     <property name="maximum">
+                      <number>255</number>
+                     </property>
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="tickPosition">
+                      <enum>QSlider::TicksBelow</enum>
+                     </property>
+                     <property name="tickInterval">
+                      <number>51</number>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QWidget" name="widgetWaterMark" native="true">
+           <layout class="QVBoxLayout" name="verticalLayout_4">
+            <item>
+             <widget class="QGroupBox" name="groupBoxWaterMark">
+              <property name="title">
+               <string>Watermark</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_5">
+               <item>
+                <layout class="QGridLayout" name="gridLayout_4">
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_wm_opacity">
+                   <property name="text">
+                    <string>Opacity</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="Slider" name="horizontalSlider_wmSize">
+                   <property name="cursor">
+                    <cursorShape>OpenHandCursor</cursorShape>
+                   </property>
+                   <property name="maximum">
+                    <number>400</number>
+                   </property>
+                   <property name="value">
+                    <number>100</number>
+                   </property>
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="tickPosition">
+                    <enum>QSlider::TicksBelow</enum>
+                   </property>
+                   <property name="tickInterval">
+                    <number>100</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_size">
+                   <property name="text">
+                    <string>Scale</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="2">
+                  <widget class="QLabel" name="label_wm_opacityvalue">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                     <horstretch>40</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>40</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>30%</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="2">
+                  <widget class="QLabel" name="label_wmSizeValue">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                     <horstretch>40</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>40</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>100%</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="Slider" name="horizontalSlider_wm_opacity">
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="cursor">
+                    <cursorShape>OpenHandCursor</cursorShape>
+                   </property>
+                   <property name="maximum">
+                    <number>100</number>
+                   </property>
+                   <property name="sliderPosition">
+                    <number>30</number>
+                   </property>
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="tickPosition">
+                    <enum>QSlider::TicksBelow</enum>
+                   </property>
+                   <property name="tickInterval">
+                    <number>10</number>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_position">
+                 <item>
+                  <widget class="QLabel" name="labelPositonTitle">
+                   <property name="text">
+                    <string>Position</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacer_5">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_X">
+                   <property name="text">
+                    <string>X</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QSpinBox" name="spinBox_X"/>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_Y">
+                   <property name="text">
+                    <string>Y</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QSpinBox" name="spinBox_Y"/>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="Line" name="line_4">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_8">
+                 <item>
+                  <widget class="QLabel" name="label">
+                   <property name="text">
+                    <string>Path</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="lineEditWmPath"/>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="pushButtonWmSet">
+                   <property name="text">
+                    <string>Set</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QPushButton" name="pushButtonWmReset">
+                 <property name="text">
+                  <string>Reset</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QWidget" name="widgetInfo" native="true">
+              <layout class="QVBoxLayout" name="verticalLayout_7">
+               <item>
+                <widget class="QLabel" name="label_2BigPic">
+                 <property name="text">
+                  <string>Info Label</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QWidget" name="widgetOnionSkinning" native="true">
+           <layout class="QVBoxLayout" name="verticalLayout_8">
+            <item>
+             <widget class="QGroupBox" name="groupBoxOnionSkinning">
+              <property name="title">
+               <string>Onion skinning</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_9">
+               <item>
+                <layout class="QGridLayout" name="gridLayout">
+                 <item row="0" column="1">
+                  <widget class="Slider" name="horizontalSliderOsOpacity">
+                   <property name="cursor">
+                    <cursorShape>OpenHandCursor</cursorShape>
+                   </property>
+                   <property name="maximum">
+                    <number>100</number>
+                   </property>
+                   <property name="value">
+                    <number>30</number>
+                   </property>
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="tickPosition">
+                    <enum>QSlider::TicksBelow</enum>
+                   </property>
+                   <property name="tickInterval">
+                    <number>10</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_6">
+                   <property name="text">
+                    <string>Opacity</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="2">
+                  <widget class="QLabel" name="label_os_opacityvalue">
+                   <property name="minimumSize">
+                    <size>
+                     <width>40</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>30%</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </widget>
    </item>
   </layout>
  </widget>
@@ -599,6 +740,25 @@
    <header>slider.hpp</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>scrollArea</tabstop>
+  <tabstop>checkBox</tabstop>
+  <tabstop>horizontalSlider_Br</tabstop>
+  <tabstop>checkBox_2</tabstop>
+  <tabstop>horizontalSlider_R</tabstop>
+  <tabstop>checkBox_3</tabstop>
+  <tabstop>horizontalSlider_G</tabstop>
+  <tabstop>checkBox_4</tabstop>
+  <tabstop>horizontalSlider_B</tabstop>
+  <tabstop>horizontalSlider_wm_opacity</tabstop>
+  <tabstop>horizontalSlider_wmSize</tabstop>
+  <tabstop>spinBox_X</tabstop>
+  <tabstop>spinBox_Y</tabstop>
+  <tabstop>lineEditWmPath</tabstop>
+  <tabstop>pushButtonWmSet</tabstop>
+  <tabstop>pushButtonWmReset</tabstop>
+  <tabstop>horizontalSliderOsOpacity</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

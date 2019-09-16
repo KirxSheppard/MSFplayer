@@ -8,8 +8,11 @@ Inspector::Inspector(QWidget *parent) :
 {
     ui->setupUi(this);
     setAcceptDrops(true);
+    ui->scrollAreaWidgetContents->setStyleSheet(".QWidget {background-color: transparent;}");
+    ui->scrollArea->setStyleSheet(".QScrollArea {background-color: transparent;}");
     ui->groupBoxColor->setStyleSheet("color: white");
     ui->groupBoxWaterMark->setStyleSheet("color: white");
+    ui->groupBoxOnionSkinning->setStyleSheet("color: white");
     ui->spinBox_X->setStyleSheet("background: gray");
     ui->spinBox_X->setRange(-10000, 10000);
     ui->spinBox_Y->setStyleSheet("background: gray");
@@ -28,6 +31,8 @@ Inspector::Inspector(QWidget *parent) :
     ui->lineEditWmPath->setStyleSheet("background: gray");
     ui->label_2BigPic->setStyleSheet("color: gray");
     ui->widgetInfo->hide();
+
+    ui->scrollArea->viewport()->installEventFilter(this);
 }
 
 Inspector::~Inspector()
@@ -49,12 +54,12 @@ void Inspector::paintEvent(QPaintEvent *event)
     QPainter painter(this);
 
     //background
-    painter.fillRect(this->rect(), QColor::fromRgb(20, 20, 20, 255));
+    painter.fillRect(rect(), QColor::fromRgb(20, 20, 20, 255));
 
     //main background
     QRadialGradient gradient(70, height() - 10, width(), width() - 10, 20);
-        gradient.setColorAt(1, QColor::fromRgbF(0.15, 0.15, 0.15, 1));
-        gradient.setColorAt(0, QColor::fromRgbF(0.3, 0.3, 0.3, 0.8));
+    gradient.setColorAt(1, QColor::fromRgbF(0.15, 0.15, 0.15, 1));
+    gradient.setColorAt(0, QColor::fromRgbF(0.3, 0.3, 0.3, 0.8));
     painter.setBrush(gradient);
     painter.setPen(Qt::NoPen);
     painter.drawRoundedRect(5, 5, width() - 10, height() - 10, 5.0, 5.0);
@@ -66,6 +71,29 @@ void Inspector::dragEnterEvent(QDragEnterEvent *e)
     {
         e->acceptProposedAction();
     }
+}
+
+bool Inspector::eventFilter(QObject *obj, QEvent *event)
+{
+//    auto w = ui->scrollArea->viewport();
+//    if (obj == w && event->type() == QEvent::Paint)
+//    {
+//        QPainter painter(w);
+
+//        //background
+//        painter.fillRect(w->rect(), QColor::fromRgb(20, 20, 20, 255));
+
+//        //main background
+//        QRadialGradient gradient(70, w->height() - 10, w->width(), w->width() - 10, 20);
+//        gradient.setColorAt(1, QColor::fromRgbF(0.15, 0.15, 0.15, 1));
+//        gradient.setColorAt(0, QColor::fromRgbF(0.3, 0.3, 0.3, 0.8));
+//        painter.setBrush(gradient);
+//        painter.setPen(Qt::NoPen);
+//        painter.drawRoundedRect(5, 5, w->width() - 10, w->height() - 10, 5.0, 5.0);
+
+//        return true;
+//    }
+    return false;
 }
 
 void Inspector::dropEvent(QDropEvent *event)
@@ -213,14 +241,14 @@ void Inspector::on_horizontalSlider_wmSize_sliderReleased()
      ui->horizontalSlider_wmSize->setCursor(Qt::OpenHandCursor);
 }
 
-void Inspector::on_spinBox_X_valueChanged(int arg1)
+void Inspector::on_horizontalSliderOsOpacity_sliderPressed()
 {
-    emit wmPosX(arg1);
+    ui->horizontalSliderOsOpacity->setCursor(Qt::ClosedHandCursor);
 }
 
-void Inspector::on_spinBox_Y_valueChanged(int arg1)
+void Inspector::on_horizontalSliderOsOpacity_sliderReleased()
 {
-    emit wmPosY(arg1);
+    ui->horizontalSliderOsOpacity->setCursor(Qt::OpenHandCursor);
 }
 
 void Inspector::on_pushButtonWmReset_clicked()
@@ -238,5 +266,18 @@ void Inspector::on_pushButtonWmSet_clicked()
     emit wmSetPressed(mFileName);
 }
 
+void Inspector::on_horizontalSliderOsOpacity_valueChanged(int value)
+{
+    QString temp = QString::number(value) + "%";
+    ui->label_os_opacityvalue->setText(temp);
+    emit osOpacityValue((double)value / 100);
+}
 
-
+void Inspector::on_spinBox_X_editingFinished()
+{
+    emit wmPosX(ui->spinBox_X->value());
+}
+void Inspector::on_spinBox_Y_editingFinished()
+{
+    emit wmPosY(ui->spinBox_Y->value());
+}

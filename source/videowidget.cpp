@@ -49,7 +49,7 @@ void VideoWidget::updateVidEffects()
     if (ifOnionSkinning)
     {
         painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-        painter.setOpacity(0.3);
+        painter.setOpacity(mOsOpacityVal);
         painter.drawImage(QRect(QPoint(), imgS), m_imgs[0]);
     }
     if(ifWaterMark)
@@ -131,6 +131,12 @@ void VideoWidget::setWmPath(QString path)
 void VideoWidget::setWmScaleValue(int value)
 {
     mWmScale = value;
+    updateVidEffects();
+}
+
+void VideoWidget::setOsOpacityValue(double value)
+{
+    mOsOpacityVal = value;
     updateVidEffects();
 }
 

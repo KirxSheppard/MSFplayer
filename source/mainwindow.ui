@@ -190,11 +190,11 @@
       </item>
       <item row="0" column="1">
        <widget class="Inspector" name="widgetInspector" native="true">
-        <property name="minimumSize">
-         <size>
-          <width>30</width>
-          <height>0</height>
-         </size>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
         </property>
        </widget>
       </item>
@@ -270,6 +270,7 @@
       <string>Background color</string>
      </property>
      <addaction name="actionBlack"/>
+     <addaction name="actionGray"/>
      <addaction name="actionWhite"/>
     </widget>
     <addaction name="menuBackground_color"/>
@@ -334,6 +335,11 @@
   <action name="actionWhite">
    <property name="text">
     <string>White</string>
+   </property>
+  </action>
+  <action name="actionGray">
+   <property name="text">
+    <string>Gray</string>
    </property>
   </action>
  </widget>
