@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
    if (argc > 1)
        initDial.setFileName(argv[1]);
 
-//   initDial.setFileName("/Users/kamil/Desktop/Target Earth - Festiwal.mp4");//temp
+//   initDial.setFileName("/Users/kamil/Desktop/sw ep 2/5_001_24.mov");//tempgit
    if (initDial.exec() == QDialog::Accepted)
    {
         videoInPutPath = initDial.getInputFilePath();

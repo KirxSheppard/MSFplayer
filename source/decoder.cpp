@@ -183,43 +183,59 @@ void Decoder::run()
 
         imgToRGB();
 
-        {
-            if(checkIfBrightness())
-            {
-                adjustColor(0, 1, mVidBright);
-            }
-            if(ifRedOpt)
-            {
-
-                adjustColor(2, 4, mVidRed);
-            }
-            if(ifGreenOpt)
-            {
-                adjustColor(1, 4, mVidGreen);
-            }
-            if(ifBlueOpt)
-            {
-                adjustColor(0, 4, mVidBlue);
-            }
-        }
-
-        emit videoTimeCode(currPos);
-
-        emit mRgb(qImg);
-
-        loopPlayCond();
-        emit positon(getFrameIterator()); //currPos if we want to display progress bar in the total video length
         if(mIfPaused)
         {
             for(;;)
             {
+                QImage qImgBuff = qImg;
+                if(ifBrightOpt)
+                {
+                    adjustColor(0, 1, mVidBright);
+                }
+                if(ifRedOpt)
+                {
+                    adjustColor(2, 4, mVidRed);
+                }
+                if(ifGreenOpt)
+                {
+                    adjustColor(1, 4, mVidGreen);
+                }
+                if(ifBlueOpt)
+                {
+                    adjustColor(0, 4, mVidBlue);
+                }
+                emit mRgb(qImg);
+                qImg = std::move(qImgBuff);
 //                mMutex.lock();
 //                waitCond.wait(&mMutex);
 //                mMutex.unlock();
-                sleep(1);
+                msleep(250);
                 if(!mIfPaused || mStop) break;
             }
         }
+        if(ifBrightOpt)
+        {
+            adjustColor(0, 1, mVidBright);
+        }
+        if(ifRedOpt)
+        {
+            adjustColor(2, 4, mVidRed);
+        }
+        if(ifGreenOpt)
+        {
+            adjustColor(1, 4, mVidGreen);
+        }
+        if(ifBlueOpt)
+        {
+            adjustColor(0, 4, mVidBlue);
+        }
+
+        emit videoTimeCode(currPos);
+        emit mRgb(qImg);
+
+        loopPlayCond();
+        emit positon(getFrameIterator()); //currPos if we want to display progress bar in the total video length
+
         playerSleepThread();
         if(mStop) break;
     }
@@ -414,7 +430,7 @@ int Decoder::getHeight()
 //Adjust brightness and RGB intensity
 void Decoder::adjustColor(int initPos, int step, int value)
 {
-    uint8_t *src = qImg.bits();
+    const uint8_t *src = qImg.constBits();
     uint8_t *dst = qImg.bits();
 
     int w4 = qImg.width() * 4;

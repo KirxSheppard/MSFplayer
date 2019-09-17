@@ -9,7 +9,6 @@ class VideoWidget : public QWidget
     Q_OBJECT
 public:
     VideoWidget(QWidget *parent = nullptr);
-//    VideoWidget(const QString msfLogo, QWidget *parent = nullptr);
     void paintEvent(QPaintEvent *event) override;
     void updateVidEffects();
     void mPlayVidToUpdate();
@@ -44,7 +43,7 @@ private:
     QImage m_imgGOps;
     QColor mBgColor = Qt::black;
     QString mWaterMarkPath, mMsfLogoPath;
-    bool ifPaused, ifWaterMark, ifOnionSkinning;
+    bool ifPaused, ifWaterMark = false, ifOnionSkinning = false;
     int mWmPosX = 0, mWmPosY = 0;
     int mWmScale = 100;
     double mWmOpacityVal = 0.3;

@@ -347,9 +347,9 @@ void MainWindow::on_playPauseButton_clicked()
 void MainWindow::on_actionAbout_this_app_triggered()
 {
      QMessageBox::about(this, "About this app",
-                        "Current version: 1.2.0\nCreated by: Kamil Janko\n\n"
-                        "This program demuxes and decodes the given video and allows to add watermark, onion skinning, change brightness,"
-                        " manipulate RGB channels and save particular frames. Since the version 1.1 it is also possible to open pictures.");
+                        "Current version: 1.2.1\nCreated by: Kamil Janko\n\n"
+                        "The program demuxes and decodes the given video and allows to add watermark, onion skinning, change brightness,"
+                        " manipulate RGB channels and save particular frames. Since version 1.1 it is also possible to open images but you can not modify their colors in the inspector yet.");
 }
 
 void MainWindow::on_actionwater_mark_triggered()
